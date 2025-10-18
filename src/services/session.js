@@ -1,0 +1,233 @@
+import supabase from '../utils/supabase'
+
+export class SessionService {
+  // Create a new session
+  static async createSession(quizId, hostId) {
+    console.log('SessionService.createSession called with:', { quizId, hostId })
+    const sessionCode = this.generateSessionCode()
+    console.log('Generated session code:', sessionCode)
+    
+    const { data, error } = await supabase
+      .from('sessions')
+      .insert([
+        {
+          quiz_id: quizId,
+          host_id: hostId,
+          code: sessionCode,
+          status: 'active'
+        }
+      ])
+      .select()
+      .single()
+    
+    console.log('Session creation result:', { data, error })
+    
+    return { data, error }
+  }
+
+  // Join a session
+  static async joinSession(sessionCode, participantId, nickname) {
+    console.log('SessionService.joinSession called with:', { sessionCode, participantId, nickname })
+    
+    // First, get the session
+    const { data: session, error: sessionError } = await supabase
+      .from('sessions')
+      .select('*')
+      .eq('code', sessionCode)
+      .eq('status', 'active')
+      .single()
+
+    console.log('Session lookup result:', { session, sessionError })
+
+    if (sessionError) {
+      console.error('Session lookup error:', sessionError)
+      return { data: null, error: sessionError }
+    }
+
+    if (!session) {
+      console.error('Session not found for code:', sessionCode)
+      return { data: null, error: { message: 'Session not found or not active' } }
+    }
+
+    // Check if this is a guest user (starts with 'guest_' or is a UUID)
+    const isGuest = participantId.startsWith('guest_') || participantId.includes('-')
+    
+    console.log('Adding participant to session:', session.id, 'isGuest:', isGuest)
+    
+    // Prepare participant data based on user type
+    const participantData = {
+      session_id: session.id,
+      nickname,
+      score: 0
+    }
+    
+    if (isGuest) {
+      // For guest users, use guest_id instead of user_id
+      participantData.guest_id = participantId
+      participantData.user_id = null
+    } else {
+      // For authenticated users, use user_id
+      participantData.user_id = participantId
+      participantData.guest_id = null
+    }
+    
+    const { data, error } = await supabase
+      .from('session_participants')
+      .insert([participantData])
+      .select()
+      .single()
+    
+    console.log('Participant creation result:', { data, error })
+    
+    return { data: { session, participant: data }, error }
+  }
+
+  // Get session details
+  static async getSession(sessionId) {
+    const { data, error } = await supabase
+      .from('sessions')
+      .select(`
+        *,
+        quizzes (*),
+        session_participants (*)
+      `)
+      .eq('id', sessionId)
+      .single()
+    
+    return { data, error }
+  }
+
+  // Update current question
+  static async updateCurrentQuestion(sessionId, questionId) {
+    const { data, error } = await supabase
+      .from('sessions')
+      .update({ current_question: questionId })
+      .eq('id', sessionId)
+      .select()
+      .single()
+    
+    return { data, error }
+  }
+
+  // Submit answer
+  static async submitAnswer(sessionId, participantId, questionId, answerId, isCorrect) {
+    const { data, error } = await supabase
+      .from('responses')
+      .insert([
+        {
+          session_id: sessionId,
+          participant_id: participantId,
+          question_id: questionId,
+          answer_id: answerId,
+          is_correct: isCorrect
+        }
+      ])
+      .select()
+      .single()
+    
+    if (error) return { data, error }
+
+    // Update participant score
+    if (isCorrect) {
+      await this.updateParticipantScore(sessionId, participantId)
+    }
+    
+    return { data, error }
+  }
+
+  // Update participant score
+  static async updateParticipantScore(sessionId, participantId) {
+    const { data: participant, error: fetchError } = await supabase
+      .from('session_participants')
+      .select('score')
+      .eq('session_id', sessionId)
+      .eq('id', participantId)
+      .single()
+
+    if (fetchError) return { error: fetchError }
+
+    const { error } = await supabase
+      .from('session_participants')
+      .update({ score: participant.score + 1 })
+      .eq('session_id', sessionId)
+      .eq('id', participantId)
+
+    return { error }
+  }
+
+  // Get leaderboard
+  static async getLeaderboard(sessionId) {
+    const { data, error } = await supabase
+      .from('session_participants')
+      .select('*')
+      .eq('session_id', sessionId)
+      .order('score', { ascending: false })
+    
+    return { data, error }
+  }
+
+  // End session
+  static async endSession(sessionId) {
+    const { data, error } = await supabase
+      .from('sessions')
+      .update({ status: 'completed' })
+      .eq('id', sessionId)
+      .select()
+      .single()
+    
+    return { data, error }
+  }
+
+  // Subscribe to session updates
+  static subscribeToSession(sessionId, callback) {
+    return supabase
+      .channel(`session-${sessionId}`)
+      .on('postgres_changes', 
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'sessions',
+          filter: `id=eq.${sessionId}`
+        }, 
+        callback
+      )
+      .subscribe()
+  }
+
+  // Subscribe to responses for leaderboard
+  static subscribeToResponses(sessionId, callback) {
+    return supabase
+      .channel(`responses-${sessionId}`)
+      .on('postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'responses',
+          filter: `session_id=eq.${sessionId}`
+        }, 
+        callback
+      )
+      .subscribe()
+  }
+
+  // Subscribe to session participants
+  static subscribeToParticipants(sessionId, callback) {
+    return supabase
+      .channel(`participants-${sessionId}`)
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'session_participants',
+          filter: `session_id=eq.${sessionId}`
+        }, 
+        callback
+      )
+      .subscribe()
+  }
+
+  // Generate unique session code
+  static generateSessionCode() {
+    return Math.random().toString(36).substring(2, 8).toUpperCase()
+  }
+}
