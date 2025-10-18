@@ -230,4 +230,86 @@ export class SessionService {
   static generateSessionCode() {
     return Math.random().toString(36).substring(2, 8).toUpperCase()
   }
+
+  // Clean up guest user data from all sessions
+  static async cleanupGuestUser(guestId) {
+    try {
+      console.log('SessionService: Cleaning up guest user:', guestId)
+      
+      // Remove guest from all session participants
+      const { error: participantsError } = await supabase
+        .from('session_participants')
+        .delete()
+        .eq('guest_id', guestId)
+      
+      if (participantsError) {
+        console.error('Error removing guest from participants:', participantsError)
+        return { error: participantsError }
+      }
+      
+      // Remove guest responses
+      const { error: responsesError } = await supabase
+        .from('responses')
+        .delete()
+        .eq('participant_id', guestId)
+      
+      if (responsesError) {
+        console.error('Error removing guest responses:', responsesError)
+        return { error: responsesError }
+      }
+      
+      console.log('Guest user cleanup completed successfully')
+      return { error: null }
+    } catch (err) {
+      console.error('Error during guest user cleanup:', err)
+      return { error: err }
+    }
+  }
+
+  // Clean up all orphaned guest data (for maintenance)
+  static async cleanupOrphanedGuests() {
+    try {
+      console.log('SessionService: Cleaning up orphaned guest data')
+      
+      // Find all guest participants that might be orphaned
+      const { data: orphanedParticipants, error: fetchError } = await supabase
+        .from('session_participants')
+        .select('id, guest_id, session_id')
+        .not('guest_id', 'is', null)
+        .is('user_id', null)
+      
+      if (fetchError) {
+        console.error('Error fetching orphaned participants:', fetchError)
+        return { error: fetchError }
+      }
+      
+      if (!orphanedParticipants || orphanedParticipants.length === 0) {
+        console.log('No orphaned guest data found')
+        return { error: null }
+      }
+      
+      console.log(`Found ${orphanedParticipants.length} orphaned guest participants`)
+      
+      // Remove orphaned participants and their responses
+      for (const participant of orphanedParticipants) {
+        // Remove responses for this participant
+        await supabase
+          .from('responses')
+          .delete()
+          .eq('participant_id', participant.id)
+        
+        // Remove the participant
+        await supabase
+          .from('session_participants')
+          .delete()
+          .eq('id', participant.id)
+      }
+      
+      console.log('Orphaned guest data cleanup completed')
+      return { error: null }
+    } catch (err) {
+      console.error('Error during orphaned guest cleanup:', err)
+      return { error: err }
+    }
+  }
 }

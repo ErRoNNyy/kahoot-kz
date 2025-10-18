@@ -1,4 +1,5 @@
 import supabase from '../utils/supabase'
+import { SessionService } from './session'
 
 export class AuthService {
   // Sign up with email and password
@@ -59,10 +60,63 @@ export class AuthService {
   // Sign out
   static async signOut() {
     console.log('AuthService.signOut called')
+    
+    // Check if current user is a guest
+    const guestUser = localStorage.getItem('guest_user')
+    if (guestUser) {
+      const parsedGuestUser = JSON.parse(guestUser)
+      console.log('Cleaning up guest user data:', parsedGuestUser.id)
+      
+      // Clean up guest user data from database
+      await this.cleanupGuestUserData(parsedGuestUser.id)
+    }
+    
     const { error } = await supabase.auth.signOut()
     localStorage.removeItem('guest_user')
     console.log('Guest user removed from localStorage')
     return { error }
+  }
+
+  // Clean up guest user data from database
+  static async cleanupGuestUserData(guestId) {
+    try {
+      console.log('Cleaning up guest user data for ID:', guestId)
+      
+      // Use SessionService to clean up guest data
+      const { error } = await SessionService.cleanupGuestUser(guestId)
+      
+      if (error) {
+        console.error('Error during guest user cleanup:', error)
+      } else {
+        console.log('Guest user data cleanup completed successfully')
+      }
+    } catch (err) {
+      console.error('Error during guest user cleanup:', err)
+    }
+  }
+
+  // Clean up guest data on page unload (for cases where signOut isn't called)
+  static setupGuestCleanupOnUnload() {
+    const handleBeforeUnload = () => {
+      const guestUser = localStorage.getItem('guest_user')
+      if (guestUser) {
+        const parsedGuestUser = JSON.parse(guestUser)
+        console.log('Page unloading, cleaning up guest user:', parsedGuestUser.id)
+        
+        // Use sendBeacon for reliable cleanup on page unload
+        if (navigator.sendBeacon) {
+          // This is a fire-and-forget cleanup
+          SessionService.cleanupGuestUser(parsedGuestUser.id)
+        }
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    
+    // Return cleanup function
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
   }
 
   // Get current user

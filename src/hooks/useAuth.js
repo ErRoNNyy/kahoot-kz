@@ -15,6 +15,9 @@ export function useAuth() {
 
     getInitialUser()
 
+    // Set up guest cleanup on page unload
+    const cleanupGuestOnUnload = AuthService.setupGuestCleanupOnUnload()
+
     // Listen for auth changes
     const { data: { subscription } } = AuthService.onAuthStateChange(
       async (event, session) => {
@@ -37,7 +40,10 @@ export function useAuth() {
       }
     )
 
-    return () => subscription?.unsubscribe()
+    return () => {
+      subscription?.unsubscribe()
+      cleanupGuestOnUnload()
+    }
   }, [])
 
   const signUp = async (email, password, username) => {
