@@ -69,6 +69,13 @@ export class AuthService {
       
       // Clean up guest user data from database
       await this.cleanupGuestUserData(parsedGuestUser.id)
+    } else {
+      // For authenticated users, clean up their sessions
+      const currentUser = await this.getCurrentUser()
+      if (currentUser && !currentUser.isGuest) {
+        console.log('Cleaning up user sessions:', currentUser.id)
+        await this.cleanupUserSessions(currentUser.id)
+      }
     }
     
     const { error } = await supabase.auth.signOut()
@@ -92,6 +99,24 @@ export class AuthService {
       }
     } catch (err) {
       console.error('Error during guest user cleanup:', err)
+    }
+  }
+
+  // Clean up user sessions from database
+  static async cleanupUserSessions(userId) {
+    try {
+      console.log('Cleaning up user sessions for ID:', userId)
+      
+      // Use SessionService to clean up user sessions
+      const { error } = await SessionService.cleanupUserSessions(userId)
+      
+      if (error) {
+        console.error('Error during user sessions cleanup:', error)
+      } else {
+        console.log('User sessions cleanup completed successfully')
+      }
+    } catch (err) {
+      console.error('Error during user sessions cleanup:', err)
     }
   }
 

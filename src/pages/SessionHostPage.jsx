@@ -208,6 +208,42 @@ export default function SessionHostPage({ onNavigate, onSessionCreated }) {
     await loadParticipants()
   }
 
+  const closeSession = async () => {
+    if (!session?.id) return
+    
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      'Are you sure you want to close this session?\n\n' +
+      'This will remove all participants and end the session permanently.\n' +
+      'This action cannot be undone.'
+    )
+    
+    if (!confirmed) return
+    
+    try {
+      console.log('Closing session:', session.id)
+      setLoading(true)
+      
+      // Clean up the session
+      const { error } = await SessionService.cleanupSession(session.id)
+      
+      if (error) {
+        console.error('Error closing session:', error)
+        setError('Failed to close session')
+      } else {
+        console.log('Session closed successfully')
+        alert('✅ Session closed successfully!\n\nAll participants have been removed and the session has been ended.')
+        setSession(null)
+        onNavigate('dashboard')
+      }
+    } catch (err) {
+      console.error('Error closing session:', err)
+      setError('Failed to close session')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   if (session) {
     return (
       <div className="min-h-screen p-6">
@@ -220,6 +256,12 @@ export default function SessionHostPage({ onNavigate, onSessionCreated }) {
             <div className="text-6xl mb-6">🎉</div>
             <h1 className="text-3xl font-bold text-gray-800 mb-4">Session Created!</h1>
             <p className="text-gray-600 mb-6">Share this code with participants to join your quiz</p>
+            
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                <strong>Error:</strong> {error}
+              </div>
+            )}
             
             <div className="bg-purple-100 rounded-lg p-6 mb-6">
               <p className="text-sm text-gray-600 mb-2">Session Code</p>
@@ -291,6 +333,15 @@ export default function SessionHostPage({ onNavigate, onSessionCreated }) {
                 className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
               >
                 Start Quiz
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={closeSession}
+                disabled={loading}
+                className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Closing...' : 'Close Session'}
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05 }}

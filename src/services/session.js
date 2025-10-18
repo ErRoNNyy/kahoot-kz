@@ -312,4 +312,129 @@ export class SessionService {
       return { error: err }
     }
   }
+
+  // Clean up a specific session (when host navigates away)
+  static async cleanupSession(sessionId) {
+    try {
+      console.log('SessionService: Cleaning up session:', sessionId)
+      
+      // Remove all participants from this session first
+      const { error: participantsError } = await supabase
+        .from('session_participants')
+        .delete()
+        .eq('session_id', sessionId)
+      
+      if (participantsError) {
+        console.error('Error removing participants:', participantsError)
+        return { error: participantsError }
+      }
+      
+      // Remove all responses for this session
+      const { error: responsesError } = await supabase
+        .from('responses')
+        .delete()
+        .eq('session_id', sessionId)
+      
+      if (responsesError) {
+        console.error('Error removing responses:', responsesError)
+        return { error: responsesError }
+      }
+      
+      // Finally, delete the session itself
+      const { error: sessionError } = await supabase
+        .from('sessions')
+        .delete()
+        .eq('id', sessionId)
+      
+      if (sessionError) {
+        console.error('Error deleting session:', sessionError)
+        return { error: sessionError }
+      }
+      
+      console.log('Session cleanup completed successfully - session deleted')
+      return { error: null }
+    } catch (err) {
+      console.error('Error during session cleanup:', err)
+      return { error: err }
+    }
+  }
+
+  // Clean up abandoned sessions (sessions that are active but no one is using them)
+  static async cleanupAbandonedSessions() {
+    try {
+      console.log('SessionService: Cleaning up abandoned sessions')
+      
+      // Find sessions that are active but have no recent activity
+      // (older than 30 minutes and no participants)
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+      
+      const { data: abandonedSessions, error: fetchError } = await supabase
+        .from('sessions')
+        .select('id, created_at')
+        .eq('status', 'active')
+        .lt('created_at', thirtyMinutesAgo)
+      
+      if (fetchError) {
+        console.error('Error fetching abandoned sessions:', fetchError)
+        return { error: fetchError }
+      }
+      
+      if (!abandonedSessions || abandonedSessions.length === 0) {
+        console.log('No abandoned sessions found')
+        return { error: null }
+      }
+      
+      console.log(`Found ${abandonedSessions.length} abandoned sessions`)
+      
+      // Clean up each abandoned session
+      for (const session of abandonedSessions) {
+        console.log('Cleaning up abandoned session:', session.id)
+        await this.cleanupSession(session.id)
+      }
+      
+      console.log('Abandoned sessions cleanup completed')
+      return { error: null }
+    } catch (err) {
+      console.error('Error during abandoned sessions cleanup:', err)
+      return { error: err }
+    }
+  }
+
+  // Clean up sessions when user navigates away (for specific user sessions)
+  static async cleanupUserSessions(userId) {
+    try {
+      console.log('SessionService: Cleaning up sessions for user:', userId)
+      
+      // Find all active sessions hosted by this user
+      const { data: userSessions, error: fetchError } = await supabase
+        .from('sessions')
+        .select('id')
+        .eq('host_id', userId)
+        .eq('status', 'active')
+      
+      if (fetchError) {
+        console.error('Error fetching user sessions:', fetchError)
+        return { error: fetchError }
+      }
+      
+      if (!userSessions || userSessions.length === 0) {
+        console.log('No active sessions found for user')
+        return { error: null }
+      }
+      
+      console.log(`Found ${userSessions.length} active sessions for user`)
+      
+      // Clean up each session
+      for (const session of userSessions) {
+        console.log('Cleaning up user session:', session.id)
+        await this.cleanupSession(session.id)
+      }
+      
+      console.log('User sessions cleanup completed')
+      return { error: null }
+    } catch (err) {
+      console.error('Error during user sessions cleanup:', err)
+      return { error: err }
+    }
+  }
 }

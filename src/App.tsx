@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useAuth } from './hooks/useAuth'
 import { motion } from 'framer-motion'
+import { SessionService } from './services/session'
 import './App.css'
 
 // Import pages
@@ -15,10 +16,20 @@ import GuestJoinPage from './pages/GuestJoinPage'
 import GuestWaitingPage from './pages/GuestWaitingPage'
 import ProfilePage from './pages/ProfilePage'
 
+// Define session data type
+interface SessionData {
+  id: string
+  quiz_id: string
+  host_id: string
+  code: string
+  status: string
+  created_at: string
+}
+
 function App() {
   const { user, loading } = useAuth()
   const [currentPage, setCurrentPage] = useState('login')
-  const [sessionData, setSessionData] = useState(null)
+  const [sessionData, setSessionData] = useState<SessionData | null>(null)
   const [editQuizData, setEditQuizData] = useState<{ quizId: string } | null>(null)
 
   // Reset page to login when user becomes null (after sign out)
@@ -28,6 +39,22 @@ function App() {
       setCurrentPage('login')
     }
   }, [user, currentPage])
+
+  // Clean up session on page unload
+  React.useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (sessionData?.id) {
+        console.log('Page unloading, cleaning up session:', sessionData.id)
+        SessionService.cleanupSession(sessionData.id)
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [sessionData])
 
   if (loading) {
     return (
@@ -51,6 +78,15 @@ function App() {
   }
 
   const handleNavigation = (page: string, data: any = null) => {
+    // Clean up session data when navigating away from session pages
+    if (currentPage === 'host-session' || currentPage === 'join-session' || currentPage === 'play-quiz' || currentPage === 'guest-waiting') {
+      if (sessionData?.id) {
+        console.log('Cleaning up session on navigation:', sessionData.id)
+        SessionService.cleanupSession(sessionData.id)
+      }
+      setSessionData(null)
+    }
+
     if (page === 'create-quiz' && data?.editQuizId) {
       setEditQuizData({ quizId: data.editQuizId })
     } else {
