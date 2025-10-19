@@ -281,12 +281,17 @@ export default function DashboardPage({ onNavigate }) {
                       <div className="flex space-x-2">
                         <button 
                           onClick={() => onNavigate('create-quiz', { editQuizId: quiz.id })}
-                          className="text-blue-600 hover:text-blue-700 font-medium"
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-1"
                         >
-                          ✏️ Edit
+                          <span>✏️</span>
+                          <span>Edit</span>
                         </button>
-                        <button className="text-purple-600 hover:text-purple-700 font-medium">
-                          🎯 Host
+                        <button 
+                          onClick={() => onNavigate('host-session', { selectedQuiz: quiz })}
+                          className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-1"
+                        >
+                          <span>🎯</span>
+                          <span>Host</span>
                         </button>
                       </div>
                     </div>
