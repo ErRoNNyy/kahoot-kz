@@ -329,7 +329,10 @@ export default function SessionHostPage({ onNavigate, onSessionCreated }) {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => onNavigate('play-quiz')}
+                onClick={() => {
+                  console.log('SessionHostPage: Starting quiz with session:', session)
+                  onNavigate('quiz-host-control', { sessionData: { session: session, participant: null } })
+                }}
                 className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
               >
                 Start Quiz
@@ -342,14 +345,6 @@ export default function SessionHostPage({ onNavigate, onSessionCreated }) {
                 className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Closing...' : 'Close Session'}
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => onNavigate('dashboard')}
-                className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                Back to Dashboard
               </motion.button>
             </div>
           </motion.div>

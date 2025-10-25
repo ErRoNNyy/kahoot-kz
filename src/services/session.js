@@ -1,4 +1,5 @@
 import supabase from '../utils/supabase'
+import { ResponsesService } from './responses.js'
 
 export class SessionService {
   // Create a new session
@@ -99,6 +100,8 @@ export class SessionService {
 
   // Update current question
   static async updateCurrentQuestion(sessionId, questionId) {
+    console.log('SessionService.updateCurrentQuestion called with:', { sessionId, questionId })
+    
     const { data, error } = await supabase
       .from('sessions')
       .update({ current_question: questionId })
@@ -106,51 +109,82 @@ export class SessionService {
       .select()
       .single()
     
-    return { data, error }
-  }
-
-  // Submit answer
-  static async submitAnswer(sessionId, participantId, questionId, answerId, isCorrect) {
-    const { data, error } = await supabase
-      .from('responses')
-      .insert([
-        {
-          session_id: sessionId,
-          participant_id: participantId,
-          question_id: questionId,
-          answer_id: answerId,
-          is_correct: isCorrect
-        }
-      ])
-      .select()
-      .single()
+    console.log('SessionService.updateCurrentQuestion result:', { data, error })
     
-    if (error) return { data, error }
-
-    // Update participant score
-    if (isCorrect) {
-      await this.updateParticipantScore(sessionId, participantId)
+    if (error) {
+      console.error('Error updating current question:', error)
+    } else {
+      console.log('Successfully updated session current_question to:', questionId)
     }
     
     return { data, error }
   }
 
+  // Submit answer
+  static async submitAnswer(sessionId, participantId, questionId, answerId, isCorrect, answerText = null) {
+    console.log('SessionService.submitAnswer called with:', {
+      sessionId,
+      participantId,
+      questionId,
+      answerId,
+      isCorrect,
+      answerText
+    })
+    
+    // Use the new ResponsesService
+    const { data, error } = await ResponsesService.submitResponse(
+      sessionId,
+      participantId,
+      questionId,
+      answerId,
+      isCorrect,
+      answerText
+    )
+    
+    console.log('SessionService.submitAnswer result:', { data, error })
+    
+    if (error) {
+      console.error('Error submitting answer:', error)
+      return { data, error }
+    }
+
+    // Update participant score
+    if (isCorrect) {
+      console.log('Updating participant score for correct answer')
+      await ResponsesService.updateParticipantScore(sessionId, participantId)
+    }
+
+    return { data, error }
+  }
+
   // Update participant score
   static async updateParticipantScore(sessionId, participantId) {
+    console.log('SessionService.updateParticipantScore called with:', { sessionId, participantId })
+    
     const { data: participant, error: fetchError } = await supabase
       .from('session_participants')
-      .select('score')
+      .select('score, nickname, guest_id, user_id')
       .eq('session_id', sessionId)
       .eq('id', participantId)
       .single()
 
-    if (fetchError) return { error: fetchError }
+    console.log('SessionService.updateParticipantScore fetch result:', { participant, fetchError })
+
+    if (fetchError) {
+      console.error('Error fetching participant for score update:', fetchError)
+      return { error: fetchError }
+    }
+
+    const newScore = participant.score + 1
+    console.log('Updating participant score from', participant.score, 'to', newScore)
 
     const { error } = await supabase
       .from('session_participants')
-      .update({ score: participant.score + 1 })
+      .update({ score: newScore })
       .eq('session_id', sessionId)
       .eq('id', participantId)
+
+    console.log('SessionService.updateParticipantScore update result:', { error })
 
     return { error }
   }
@@ -436,5 +470,13 @@ export class SessionService {
       console.error('Error during user sessions cleanup:', err)
       return { error: err }
     }
+  }
+
+  // Get responses for a specific question
+  static async getQuestionResponses(sessionId, questionId) {
+    console.log('SessionService.getQuestionResponses called with:', { sessionId, questionId })
+    
+    // Use the new ResponsesService
+    return await ResponsesService.getQuestionResponses(sessionId, questionId)
   }
 }

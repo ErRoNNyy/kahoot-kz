@@ -84,7 +84,7 @@ export default function GuestWelcomePage({ onNavigate }) {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Room Code
+                  Your nickname
                 </label>
                 <input
                   type="text"

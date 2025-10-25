@@ -65,20 +65,48 @@ export default function GuestWaitingPage({ sessionData, onNavigate }) {
       loadParticipants()
     })
 
-    // Subscribe to session updates (when host starts quiz)
+    // Subscribe to session updates (when host starts quiz or ends session)
     const sessionSubscription = SessionService.subscribeToSession(sessionData.session.id, (payload) => {
-      console.log('Guest received session update:', payload)
       if (payload.new.current_question) {
         // Host started the quiz, redirect to play
-        onNavigate('play-quiz')
+        const updatedSessionData = { session: payload.new, participant: sessionData.participant }
+        console.log('Guest redirecting to play-quiz with sessionData:', updatedSessionData)
+        // Clear the interval to stop periodic checks
+        clearInterval(interval)
+        onNavigate('play-quiz', { sessionData: updatedSessionData })
+      } else if (payload.eventType === 'DELETE' || !payload.new) {
+        // Session was deleted by host
+        console.log('Guest: Session was ended by host')
+        clearInterval(interval)
+        alert('❌ Session ended by host!\n\nThe quiz session has been ended and you have been disconnected.')
+        onNavigate('guest-welcome')
       }
     })
 
     // Periodic refresh as backup
-    const interval = setInterval(() => {
+    let interval = setInterval(async () => {
       console.log('Periodic participants refresh for guest...')
       loadParticipants()
-    }, 5000)
+      
+      // Also check if session has been updated (fallback for real-time)
+      try {
+        const { data: updatedSession, error } = await SessionService.getSession(sessionData.session.id)
+        if (error && error.code === 'PGRST116') {
+          // Session not found - host ended the session
+          console.log('Guest periodic check - session not found, host ended session')
+          clearInterval(interval)
+          alert('❌ Session ended by host!\n\nThe quiz session has been ended and you have been disconnected.')
+          onNavigate('guest-welcome')
+        } else if (!error && updatedSession && updatedSession.current_question) {
+          const updatedSessionData = { session: updatedSession, participant: sessionData.participant }
+          console.log('Guest periodic check - redirecting to play-quiz')
+          clearInterval(interval)
+          onNavigate('play-quiz', { sessionData: updatedSessionData })
+        }
+      } catch (err) {
+        console.error('Error checking session status:', err)
+      }
+    }, 1000) // Check every 1 second
 
     return () => {
       console.log('Cleaning up guest subscriptions')

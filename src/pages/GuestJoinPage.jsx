@@ -83,7 +83,7 @@ export default function GuestJoinPage({ onNavigate, onSessionJoined }) {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Room Code *
+                Your Nickname *
               </label>
               <input
                 type="text"

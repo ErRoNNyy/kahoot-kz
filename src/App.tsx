@@ -11,6 +11,7 @@ import QuizCreationPage from './pages/QuizCreationPage'
 import SessionHostPage from './pages/SessionHostPage'
 import SessionJoinPage from './pages/SessionJoinPage'
 import QuizPlayPage from './pages/QuizPlayPage'
+import QuizHostControlPage from './pages/QuizHostControlPage'
 import GuestWelcomePage from './pages/GuestWelcomePage'
 import GuestJoinPage from './pages/GuestJoinPage'
 import GuestWaitingPage from './pages/GuestWaitingPage'
@@ -78,13 +79,16 @@ function App() {
   }
 
   const handleNavigation = (page: string, data: any = null) => {
-    // Clean up session data when navigating away from session pages
+    // Clean up session data when navigating away from session pages (but not to quiz-related pages)
     if (currentPage === 'host-session' || currentPage === 'join-session' || currentPage === 'play-quiz' || currentPage === 'guest-waiting') {
-      if (sessionData?.id) {
-        console.log('Cleaning up session on navigation:', sessionData.id)
-        SessionService.cleanupSession(sessionData.id)
+      // Don't clear sessionData if navigating to quiz-related pages
+      if (!['play-quiz', 'quiz-host-control', 'guest-waiting'].includes(page)) {
+        if (sessionData?.id) {
+          console.log('Cleaning up session on navigation:', sessionData.id)
+          SessionService.cleanupSession(sessionData.id)
+        }
+        setSessionData(null)
       }
-      setSessionData(null)
     }
 
     if (page === 'create-quiz' && data?.editQuizId) {
@@ -92,6 +96,13 @@ function App() {
     } else {
       setEditQuizData(null)
     }
+
+    // Handle sessionData parameter for quiz-related pages
+    if ((page === 'quiz-host-control' || page === 'play-quiz') && data?.sessionData) {
+      console.log('App.tsx: Setting sessionData for', page, ':', data.sessionData)
+      setSessionData(data.sessionData)
+    }
+
     setCurrentPage(page)
   }
 
@@ -107,6 +118,9 @@ function App() {
         return <SessionJoinPage onNavigate={setCurrentPage} onSessionJoined={setSessionData} />
       case 'play-quiz':
         return <QuizPlayPage sessionData={sessionData} onNavigate={setCurrentPage} />
+      case 'quiz-host-control':
+        console.log('App.tsx: Rendering QuizHostControlPage with sessionData:', sessionData)
+        return <QuizHostControlPage sessionData={sessionData} onNavigate={setCurrentPage} />
       case 'profile':
         return <ProfilePage onNavigate={setCurrentPage} />
       case 'guest-welcome':
