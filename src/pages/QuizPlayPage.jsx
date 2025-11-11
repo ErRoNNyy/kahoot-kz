@@ -19,16 +19,20 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
   const [quizEnded, setQuizEnded] = useState(false)
   const [waitingForHost, setWaitingForHost] = useState(true)
   const [currentQuestionId, setCurrentQuestionId] = useState(null)
+  const [leaving, setLeaving] = useState(false)
+
+  const sessionId = sessionData?.session ? sessionData.session.id : sessionData?.id
+  const participantId = sessionData?.participant?.id
 
   useEffect(() => {
-    if (sessionData && sessionData.session) {
+    if (sessionId) {
       loadSession()
       subscribeToUpdates()
     } else {
       setError('No session data available')
       setLoading(false)
     }
-  }, [sessionData])
+  }, [sessionId])
 
   // Load current question when quiz is loaded
   useEffect(() => {
@@ -49,9 +53,9 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
   }, [currentQuestion])
 
   const loadSession = async () => {
+    if (!sessionId) return
+
     try {
-      // Handle both sessionData.session.id and sessionData.id cases
-      const sessionId = sessionData.session ? sessionData.session.id : sessionData.id
       console.log('Loading session for participant:', sessionId)
       const { data, error } = await SessionService.getSession(sessionId)
       if (error) {
@@ -134,7 +138,6 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
   }
 
   const loadParticipants = async () => {
-    const sessionId = sessionData.session ? sessionData.session.id : sessionData.id
     if (!sessionId) return
 
     try {
@@ -153,7 +156,6 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
   }
 
   const subscribeToUpdates = () => {
-    const sessionId = sessionData.session ? sessionData.session.id : sessionData.id
     if (!sessionId) return
 
     console.log('Setting up real-time subscription for participant session:', sessionId)
@@ -187,6 +189,7 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
         setQuizEnded(true)
         setQuestionActive(false)
         setShowResults(false)
+        loadParticipants()
       } else if (payload.eventType === 'DELETE' || !payload.new) {
         // Session was deleted by host
         console.log('Participant: Session was ended by host')
@@ -220,13 +223,11 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
           alert('❌ Session ended by host!\n\nThe quiz session has been ended and you have been disconnected.')
           onNavigate('guest-welcome')
         } else if (currentSession && currentSession.current_question) {
-          // Check if host moved to a new question
           if (currentSession.current_question !== currentQuestionId) {
             console.log('Participant periodic check - host moved to new question:', currentSession.current_question)
             setWaitingForHost(false)
             setCurrentQuestionId(currentSession.current_question)
-            
-            // Reset state if we're on a different question
+
             if (currentQuestion && currentSession.current_question !== currentQuestion.id) {
               console.log('Participant periodic check - resetting state for new question')
               setAnswerSubmitted(false)
@@ -257,8 +258,12 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
     }
 
     try {
-      const sessionId = sessionData.session ? sessionData.session.id : sessionData.id
-      
+      if (!sessionId || !participantId) {
+        console.warn('Submit answer aborted - missing session or participant')
+        setError('Session not found. Please rejoin.')
+        return
+      }
+
       // Handle different question types
       let answerId, isCorrect
       
@@ -299,7 +304,7 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
 
       console.log('Guest submitting answer:', {
         sessionId: sessionId,
-        participantId: sessionData.participant.id,
+        participantId: participantId,
         participantData: sessionData.participant,
         questionId: currentQuestion.id,
         questionType: currentQuestion.question_type,
@@ -310,7 +315,7 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
 
       const { data, error } = await SessionService.submitAnswer(
         sessionId,
-        sessionData.participant.id,
+        participantId,
         currentQuestion.id,
         answerId,
         isCorrect,
@@ -326,7 +331,10 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
         console.log('Answer submitted successfully:', data)
         setAnswerSubmitted(true)
         setQuestionActive(false)
-        
+
+        // Refresh leaderboard immediately so guest sees updated score
+        await loadParticipants()
+
         // Show results after a short delay
         setTimeout(() => {
           setShowResults(true)
@@ -335,6 +343,33 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
     } catch (err) {
       console.error('Error submitting answer:', err)
       setError('Failed to submit answer')
+    }
+  }
+
+  const handleLeaveSession = async () => {
+    if (!sessionId || !participantId) {
+      onNavigate('guest-welcome')
+      return
+    }
+
+    try {
+      setLeaving(true)
+      console.log('Guest leaving session:', { sessionId, participantId })
+      const { error: leaveError } = await SessionService.leaveSession(sessionId, participantId)
+
+      if (leaveError) {
+        console.error('Error leaving session:', leaveError)
+        setError('Failed to leave session. Please try again.')
+        setLeaving(false)
+        return
+      }
+
+      setLeaving(false)
+      onNavigate('guest-welcome')
+    } catch (err) {
+      console.error('Exception while leaving session:', err)
+      setError('Failed to leave session. Please try again.')
+      setLeaving(false)
     }
   }
 
@@ -381,10 +416,11 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => onNavigate('dashboard')}
-            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+            onClick={handleLeaveSession}
+            disabled={leaving}
+            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Back to Dashboard
+            {leaving ? 'Leaving...' : 'Leave Session'}
           </motion.button>
         </motion.div>
       </div>
@@ -402,7 +438,9 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
           >
             <div className="text-6xl mb-6">🎉</div>
             <h1 className="text-3xl font-bold text-gray-800 mb-4">Quiz Completed!</h1>
-            <p className="text-gray-600 mb-6">Thank you for participating</p>
+            <p className="text-gray-600 mb-6">
+              Thanks for playing! You can hang tight to celebrate with the host or leave whenever you’re ready.
+            </p>
             
             <div className="bg-purple-50 rounded-lg p-6 mb-6">
               <h3 className="text-xl font-bold text-gray-800 mb-4">Final Leaderboard</h3>
@@ -430,7 +468,7 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
                         </div>
                         <span className="font-medium text-gray-800">
                           {participant.nickname || 'Anonymous'}
-                          {participant.id === sessionData.participant.id && ' (You)'}
+                          {participant.id === participantId && ' (You)'}
                         </span>
                       </div>
                       <div className="text-lg font-bold text-gray-800">
@@ -445,12 +483,16 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => onNavigate('dashboard')}
-                className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+                onClick={handleLeaveSession}
+                disabled={leaving}
+                className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Back to Dashboard
+                {leaving ? 'Leaving...' : 'Leave Session'}
               </motion.button>
             </div>
+            <p className="text-sm text-gray-500 mt-4">
+              If the host starts another round later, just rejoin with the new room code.
+            </p>
           </motion.div>
         </div>
       </div>
@@ -482,17 +524,28 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
             <div className="text-center">
               <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-gray-600 mb-4">Waiting for quiz to start...</p>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  console.log('Guest manually refreshing session...')
-                  loadSession()
-                }}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm"
-              >
-                Refresh Session
-              </motion.button>
+              <div className="flex justify-center space-x-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    console.log('Guest manually refreshing session...')
+                    loadSession()
+                  }}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                >
+                  Refresh Session
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleLeaveSession}
+                  disabled={leaving}
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {leaving ? 'Leaving...' : 'Leave Session'}
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -516,10 +569,11 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => onNavigate('dashboard')}
-              className="bg-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors text-sm"
+              onClick={handleLeaveSession}
+              disabled={leaving}
+              className="bg-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Leave Session
+              {leaving ? 'Leaving...' : 'Leave Session'}
             </motion.button>
           </div>
         </div>
@@ -711,11 +765,16 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className={`flex items-center justify-between p-3 rounded-lg ${
-                          index === 0 ? 'bg-yellow-50 border border-yellow-200' :
-                          index === 1 ? 'bg-gray-50 border border-gray-200' :
-                          index === 2 ? 'bg-orange-50 border border-orange-200' :
-                          'bg-gray-50'
+                        className={`flex items-center justify-between p-3 rounded-lg border ${
+                          participant?.is_active === false || participant?.left_at
+                            ? 'bg-gray-100 border-gray-200 opacity-70'
+                            : index === 0
+                              ? 'bg-yellow-50 border-yellow-200'
+                              : index === 1
+                                ? 'bg-gray-50 border-gray-200'
+                                : index === 2
+                                  ? 'bg-orange-50 border-orange-200'
+                                  : 'bg-gray-50 border-gray-200'
                         }`}
                       >
                         <div className="flex items-center">
@@ -730,6 +789,7 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
                           <span className="font-medium text-gray-800">
                             {participant.nickname || 'Anonymous'}
                             {participant.id === sessionData.participant.id && ' (You)'}
+                            {(participant?.is_active === false || participant?.left_at) && ' (Left)'}
                           </span>
                         </div>
                         <div className="text-lg font-bold text-gray-800">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth.js'
 import { QuizService } from '../services/quiz.js'
@@ -22,57 +22,14 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
   const [showResults, setShowResults] = useState(false)
   const [quizEnded, setQuizEnded] = useState(false)
 
-  useEffect(() => {
-    console.log('QuizHostControlPage: sessionData received:', sessionData)
-    console.log('QuizHostControlPage: sessionData type:', typeof sessionData)
-    console.log('QuizHostControlPage: sessionData keys:', sessionData ? Object.keys(sessionData) : 'null')
-    
-    if (sessionData && sessionData.session) {
-      loadSession()
-      subscribeToUpdates()
-    } else if (sessionData && sessionData.id) {
-      // Handle case where sessionData is the session object directly
-      console.log('QuizHostControlPage: sessionData is session object directly')
-      // Use the session object directly
-      loadSession()
-      subscribeToUpdates()
-    } else {
-      console.error('QuizHostControlPage: No sessionData or session found')
-      setError('No session data available')
-      setLoading(false)
-    }
-  }, [sessionData])
+  const sessionId = sessionData?.session ? sessionData.session.id : sessionData?.id
 
-  const loadSession = async () => {
-    try {
-      // Handle both sessionData.session.id and sessionData.id cases
-      const sessionId = sessionData.session ? sessionData.session.id : sessionData.id
-      console.log('Loading session for host control:', sessionId)
-      const { data, error } = await SessionService.getSession(sessionId)
-      if (error) {
-        console.error('Error loading session:', error)
-        setError('Failed to load session')
-      } else {
-        console.log('Session loaded for host:', data)
-        setSession(data)
-        
-        // Load quiz with questions
-        if (data.quiz_id) {
-          await loadQuiz(data.quiz_id)
-        }
-        
-        // Load participants
-        await loadParticipants()
-      }
-    } catch (err) {
-      console.error('Error loading session:', err)
-      setError('Failed to load session')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const activeParticipants = useMemo(
+    () => participants.filter((participant) => participant?.is_active !== false && !participant?.left_at),
+    [participants]
+  )
 
-  const loadQuiz = async (quizId) => {
+  const loadQuiz = useCallback(async (quizId) => {
     try {
       console.log('Loading quiz for host:', quizId)
       const { data, error } = await QuizService.getQuizWithQuestions(quizId)
@@ -88,10 +45,9 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
       console.error('Error loading quiz:', err)
       setError('Failed to load quiz')
     }
-  }
+  }, [])
 
-  const loadParticipants = async () => {
-    const sessionId = sessionData.session ? sessionData.session.id : sessionData.id
+  const loadParticipants = useCallback(async () => {
     if (!sessionId) return
 
     try {
@@ -106,116 +62,63 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
     } catch (err) {
       console.error('Error loading participants:', err)
     }
-  }
+  }, [sessionId])
 
-  const subscribeToUpdates = () => {
-    const sessionId = sessionData.session ? sessionData.session.id : sessionData.id
+  const loadSession = useCallback(async () => {
     if (!sessionId) return
 
-    console.log('Setting up real-time subscription for host session:', sessionId)
-    
-    // Subscribe to session updates (to ensure host stays in sync)
-    const sessionSubscription = SessionService.subscribeToSession(sessionId, (payload) => {
-      console.log('Host received session update:', payload)
-      // Reload session data to stay in sync
-      loadSession()
-    })
+    try {
+      console.log('Loading session for host control:', sessionId)
+      const { data, error } = await SessionService.getSession(sessionId)
+      if (error) {
+        console.error('Error loading session:', error)
+        setError('Failed to load session')
+      } else if (data) {
+        console.log('Session loaded for host:', data)
+        setSession(data)
 
-    // Subscribe to participants joining
-    const participantsSubscription = SessionService.subscribeToParticipants(sessionId, (payload) => {
-      console.log('Host received participants update:', payload)
-      loadParticipants()
-    })
+        if (data.quiz_id) {
+          await loadQuiz(data.quiz_id)
+        }
 
-    // Subscribe to responses using the new ResponsesService with real-time updates
-    const responsesSubscription = ResponsesService.subscribeToResponses(sessionId, (payload) => {
-      console.log('🎯 Host received response update:', payload)
-      console.log('⚡ Host: Real-time response update received, reloading responses immediately')
-      console.log('📊 Event type:', payload.eventType)
-      console.log('🆔 Session ID:', payload.new?.session_id || payload.old?.session_id)
-      console.log('❓ Question ID:', payload.new?.question_id || payload.old?.question_id)
-      console.log('🔄 Host: About to reload responses due to real-time update')
-      // Immediately reload responses when we get a real-time update
-      loadResponses()
-    })
-
-    console.log('🔗 Host: Real-time subscription set up for session:', sessionId)
-
-    // Subscribe to responses for the current question specifically
-    let questionResponsesSubscription = null
-    if (currentQuestion) {
-      questionResponsesSubscription = ResponsesService.subscribeToQuestionResponses(sessionId, currentQuestion.id, (payload) => {
-        console.log('Host received question-specific response update:', payload)
-        console.log('Host: Real-time question response update received, reloading responses immediately')
-        loadResponses()
-      })
+        await loadParticipants()
+      }
+    } catch (err) {
+      console.error('Error loading session:', err)
+      setError('Failed to load session')
+    } finally {
+      setLoading(false)
     }
+  }, [sessionId, loadQuiz, loadParticipants])
 
-    // No periodic checks - rely purely on real-time database changes
+  const loadResponses = useCallback(async (questionId) => {
+    const activeQuestionId = questionId ?? currentQuestion?.id
 
-    return () => {
-      console.log('Cleaning up host subscriptions')
-      sessionSubscription?.unsubscribe()
-      participantsSubscription?.unsubscribe()
-      responsesSubscription?.unsubscribe()
-      questionResponsesSubscription?.unsubscribe()
-    }
-  }
-
-  const loadResponses = async () => {
-    const sessionId = sessionData.session ? sessionData.session.id : sessionData.id
-    if (!sessionId || !currentQuestion) {
-      console.log('loadResponses: Missing sessionId or currentQuestion', { sessionId, currentQuestion })
+    if (!sessionId || !activeQuestionId) {
+      console.log('loadResponses: Missing sessionId or questionId', { sessionId, activeQuestionId })
       return
     }
 
     try {
-      console.log('Host loading responses for question:', currentQuestion.id)
-      console.log('Host session info:', { sessionId, participantsCount: participants.length })
-      
-      // Get responses for current question
-      const { data, error } = await SessionService.getQuestionResponses(sessionId, currentQuestion.id)
-      console.log('Host responses loaded:', { 
-        data, 
-        error, 
-        count: data?.length || 0, 
-        participants: participants.length,
-        questionId: currentQuestion.id 
+      console.log('Host loading responses for question:', activeQuestionId)
+
+      const { data, error } = await SessionService.getQuestionResponses(sessionId, activeQuestionId)
+      console.log('Host responses loaded:', {
+        data,
+        error,
+        count: data?.length || 0,
+        questionId: activeQuestionId
       })
-      
+
       if (!error) {
-        const previousCount = responses.length
-        const newCount = data?.length || 0
-        
         setResponses(data || [])
-        
-        // Show count change feedback
-        if (newCount !== previousCount) {
-          console.log(`📈 Response count updated: ${previousCount} → ${newCount}`)
-          console.log(`👥 Participants: ${participants.length}, Responses: ${newCount}`)
-          console.log('🔄 UI should update now with new response count')
-        } else {
-          console.log(`📊 Response count unchanged: ${newCount} (participants: ${participants.length})`)
-        }
-        
-        // Log response details for debugging
-        if (data && data.length > 0) {
-          console.log('📋 Response details:', data.map(r => ({
-            responseId: r.id,
-            participantId: r.participant_id,
-            sessionParticipantId: r.session_participants?.id,
-            nickname: r.session_participants?.nickname,
-            answerId: r.answer_id,
-            isCorrect: r.is_correct,
-            hasParticipantData: !!r.session_participants
-          })))
-        } else {
-          console.log('📭 No responses found for question:', currentQuestion.id)
-        }
-        
-        // Check if all participants have answered (but don't auto-advance)
-        if (data && data.length >= participants.length && participants.length > 0) {
-          console.log('✅ All participants have answered - host can manually advance')
+
+        const activeCount = participants.filter(
+          (participant) => participant?.is_active !== false && !participant?.left_at
+        ).length
+
+        if (data && data.length >= activeCount && activeCount > 0) {
+          console.log('✅ All active participants have answered')
         }
       } else {
         console.error('❌ Error loading responses:', error)
@@ -223,7 +126,73 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
     } catch (err) {
       console.error('Error loading responses:', err)
     }
-  }
+  }, [sessionId, currentQuestion?.id, participants])
+
+  useEffect(() => {
+    console.log('QuizHostControlPage: sessionData received:', sessionData)
+    console.log('QuizHostControlPage: sessionData type:', typeof sessionData)
+    console.log('QuizHostControlPage: sessionData keys:', sessionData ? Object.keys(sessionData) : 'null')
+    console.log('QuizHostControlPage: resolved sessionId:', sessionId)
+
+    if (sessionId) {
+      loadSession()
+    } else {
+      console.error('QuizHostControlPage: No sessionData or session found')
+      setError('No session data available')
+      setLoading(false)
+    }
+  }, [sessionData, sessionId, loadSession])
+
+  useEffect(() => {
+    if (!sessionId) return
+
+    console.log('Setting up real-time subscription for host session:', sessionId)
+
+    const sessionSubscription = SessionService.subscribeToSession(sessionId, (payload) => {
+      console.log('Host received session update:', payload)
+      loadSession()
+    })
+
+    const participantsSubscription = SessionService.subscribeToParticipants(sessionId, (payload) => {
+      console.log('Host received participants update:', payload)
+      loadParticipants()
+    })
+
+    const responsesSubscription = ResponsesService.subscribeToResponses(sessionId, (payload) => {
+      console.log('🎯 Host received response update:', payload)
+      const payloadQuestionId = payload.new?.question_id || payload.old?.question_id || currentQuestion?.id
+      loadResponses(payloadQuestionId)
+    })
+
+    return () => {
+      console.log('Cleaning up host subscriptions')
+      sessionSubscription?.unsubscribe()
+      participantsSubscription?.unsubscribe()
+      responsesSubscription?.unsubscribe()
+    }
+  }, [sessionId, loadSession, loadParticipants, loadResponses, currentQuestion?.id])
+
+  useEffect(() => {
+    const activeQuestionId = currentQuestion?.id
+    if (!sessionId || !activeQuestionId) return
+
+    console.log('Subscribing to question-specific responses for question:', activeQuestionId)
+
+    const questionResponsesSubscription = ResponsesService.subscribeToQuestionResponses(
+      sessionId,
+      activeQuestionId,
+      (payload) => {
+        console.log('Host received question-specific response update:', payload)
+        const payloadQuestionId = payload.new?.question_id || payload.old?.question_id || activeQuestionId
+        loadResponses(payloadQuestionId)
+      }
+    )
+
+    return () => {
+      console.log('Cleaning up question-specific subscription for question:', activeQuestionId)
+      questionResponsesSubscription?.unsubscribe()
+    }
+  }, [sessionId, currentQuestion?.id, loadResponses])
 
   const startQuiz = async () => {
     if (!questions.length) {
@@ -231,11 +200,15 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
       return
     }
 
+    if (!sessionId) {
+      setError('Session not found')
+      return
+    }
+
     try {
       console.log('Starting quiz...')
       
       // Update session with first question FIRST to notify guests
-      const sessionId = sessionData.session ? sessionData.session.id : sessionData.id
       console.log('Host updating session with first question:', questions[0].id)
       const { error } = await SessionService.updateCurrentQuestion(sessionId, questions[0].id)
       
@@ -256,7 +229,7 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
       console.log('Session updated successfully - guests should be notified')
       
       // Load responses for the first question
-      loadResponses()
+      loadResponses(questions[0].id)
       
       console.log('Quiz started successfully')
     } catch (err) {
@@ -272,6 +245,11 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
       return
     }
 
+    if (!sessionId) {
+      setError('Session not found')
+      return
+    }
+
     try {
       const nextIndex = currentQuestionIndex + 1
       const nextQuestion = questions[nextIndex]
@@ -279,7 +257,6 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
       console.log('Moving to next question:', nextIndex + 1)
       
       // Update session with next question FIRST to notify guests
-      const sessionId = sessionData.session ? sessionData.session.id : sessionData.id
       console.log('Host updating session with next question:', nextQuestion.id)
       console.log('Host session ID:', sessionId)
       const { error } = await SessionService.updateCurrentQuestion(sessionId, nextQuestion.id)
@@ -378,16 +355,16 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
   const showQuestionResults = () => {
     setShowResults(true)
     setQuestionActive(false)
-    loadResponses()
+    loadResponses(currentQuestion?.id)
   }
 
   // Load responses when current question changes (but don't reset timer)
   useEffect(() => {
     if (currentQuestion && quizStarted) {
       console.log('Current question changed, loading responses for:', currentQuestion.id)
-      loadResponses()
+      loadResponses(currentQuestion.id)
     }
-  }, [currentQuestion, quizStarted])
+  }, [currentQuestion, quizStarted, loadResponses])
 
   // Timer effect - only run when question is active and timer is running
   useEffect(() => {
@@ -513,7 +490,14 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
             <p className="text-purple-200">Session Code: {sessionData.session ? sessionData.session.code : sessionData.code}</p>
           </div>
           <div className="text-right">
-            <div className="text-white text-sm">Participants: {participants.length}</div>
+            <div className="text-white text-sm">
+              Participants: {activeParticipants.length}
+              {participants.length !== activeParticipants.length && (
+                <span className="ml-1 text-white/80 text-xs">
+                  ({participants.length} total)
+                </span>
+              )}
+            </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -538,17 +522,23 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
                   <div className="text-6xl mb-4">🎯</div>
                   <h2 className="text-2xl font-bold text-gray-800 mb-4">Ready to Start?</h2>
                   <p className="text-gray-600 mb-6">
-                    {questions.length} questions ready • {participants.length} participants joined
+                    {questions.length} questions ready • {activeParticipants.length} active participant
+                    {activeParticipants.length === 1 ? '' : 's'}
+                    {participants.length !== activeParticipants.length && (
+                      <span className="text-xs text-gray-500 ml-1">
+                        ({participants.length} total)
+                      </span>
+                    )}
                   </p>
                   
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={startQuiz}
-                    disabled={participants.length === 0}
+                    disabled={activeParticipants.length === 0}
                     className="bg-green-600 text-white px-8 py-4 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
                   >
-                    {participants.length === 0 ? 'Waiting for Participants...' : 'Start Quiz'}
+                    {activeParticipants.length === 0 ? 'Waiting for Participants...' : 'Start Quiz'}
                   </motion.button>
                 </div>
               ) : questionActive ? (
@@ -605,8 +595,8 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
                   </div>
 
                   <div className="mt-6 text-center">
-                    <p className="text-gray-600 mb-4">
-                      {responses.length} of {participants.length} participants answered
+                  <p className="text-gray-600 mb-4">
+                      {responses.length} of {activeParticipants.length} participants answered
                     </p>
                     
                     <motion.button
@@ -658,9 +648,9 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={nextQuestion}
-                        disabled={responses.length < participants.length && participants.length > 0}
+                        disabled={responses.length < activeParticipants.length && activeParticipants.length > 0}
                         className={`px-6 py-3 rounded-lg transition-colors ${
-                          responses.length >= participants.length && participants.length > 0
+                          responses.length >= activeParticipants.length && activeParticipants.length > 0
                             ? 'bg-purple-600 text-white hover:bg-purple-700'
                             : 'bg-gray-400 text-gray-200 cursor-not-allowed'
                         }`}
@@ -678,9 +668,9 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
                       </motion.button>
                     </div>
                     
-                    {responses.length < participants.length && participants.length > 0 && (
+                    {responses.length < activeParticipants.length && activeParticipants.length > 0 && (
                       <p className="text-sm text-gray-500">
-                        Waiting for {participants.length - responses.length} more participant(s) to answer
+                        Waiting for {activeParticipants.length - responses.length} more participant(s) to answer
                         <br />
                         <span className="text-orange-600 font-medium">Or use "Skip to Next" to continue</span>
                       </p>
@@ -698,7 +688,14 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
               animate={{ opacity: 1, x: 0 }}
               className="bg-white rounded-2xl p-6 shadow-xl"
             >
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Participants ({participants.length})</h3>
+              <h3 className="text-xl font-bold text-gray-800 mb-4">
+                Participants ({activeParticipants.length})
+                {participants.length !== activeParticipants.length && (
+                  <span className="text-sm text-gray-500 ml-2">
+                    {participants.length - activeParticipants.length} left
+                  </span>
+                )}
+              </h3>
               
               {participants.length === 0 ? (
                 <div className="text-center py-8">
@@ -715,11 +712,16 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className={`flex items-center justify-between p-3 rounded-lg ${
-                          index === 0 ? 'bg-yellow-50 border border-yellow-200' :
-                          index === 1 ? 'bg-gray-50 border border-gray-200' :
-                          index === 2 ? 'bg-orange-50 border border-orange-200' :
-                          'bg-gray-50'
+                        className={`flex items-center justify-between p-3 rounded-lg border ${
+                          participant?.is_active === false || participant?.left_at
+                            ? 'bg-gray-100 border-gray-200 opacity-70'
+                            : index === 0
+                              ? 'bg-yellow-50 border-yellow-200'
+                              : index === 1
+                                ? 'bg-gray-50 border-gray-200'
+                                : index === 2
+                                  ? 'bg-orange-50 border-orange-200'
+                                  : 'bg-gray-50 border-gray-200'
                         }`}
                       >
                         <div className="flex items-center">
@@ -733,6 +735,9 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
                           </div>
                           <span className="font-medium text-gray-800">
                             {participant.nickname || 'Anonymous'}
+                            {(participant?.is_active === false || participant?.left_at) && (
+                              <span className="ml-2 text-xs text-gray-500 uppercase tracking-wide">Left</span>
+                            )}
                           </span>
                         </div>
                         <div className="text-lg font-bold text-gray-800">

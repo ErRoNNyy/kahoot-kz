@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth.js'
 import { QuizService } from '../services/quiz.js'
@@ -15,6 +15,11 @@ export default function SessionHostPage({ onNavigate, onSessionCreated }) {
   const [error, setError] = useState('')
   const [participants, setParticipants] = useState([])
   const [participantsLoading, setParticipantsLoading] = useState(false)
+
+  const activeParticipants = useMemo(
+    () => participants.filter((participant) => participant?.is_active !== false && !participant?.left_at),
+    [participants]
+  )
 
   useEffect(() => {
     if (user && !user.isGuest) {
@@ -273,7 +278,14 @@ export default function SessionHostPage({ onNavigate, onSessionCreated }) {
             {/* Participants Section */}
             <div className="bg-white rounded-lg p-6 mb-6 border-2 border-gray-200">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-gray-800">Participants ({participants.length})</h3>
+                <h3 className="text-xl font-bold text-gray-800">
+                  Participants ({activeParticipants.length})
+                  {participants.length !== activeParticipants.length && (
+                    <span className="ml-2 text-sm text-gray-500">
+                      {participants.length - activeParticipants.length} left
+                    </span>
+                  )}
+                </h3>
                 <div className="flex space-x-2">
                   <button
                     onClick={refreshParticipants}
@@ -304,14 +316,23 @@ export default function SessionHostPage({ onNavigate, onSessionCreated }) {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      className={`flex items-center justify-between p-3 rounded-lg ${
+                        participant?.is_active === false || participant?.left_at
+                          ? 'bg-gray-100 border border-gray-200 opacity-70'
+                          : 'bg-gray-50 border border-transparent'
+                      }`}
                     >
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center font-bold">
                           {index + 1}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-800">{participant.nickname || 'Anonymous'}</p>
+                          <p className="font-medium text-gray-800">
+                            {participant.nickname || 'Anonymous'}
+                            {(participant?.is_active === false || participant?.left_at) && (
+                              <span className="ml-2 text-xs text-gray-500 uppercase tracking-wide">Left</span>
+                            )}
+                          </p>
                           <p className="text-sm text-gray-500">Joined {new Date(participant.created_at).toLocaleString()}</p>
                         </div>
                       </div>

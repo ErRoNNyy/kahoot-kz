@@ -9,6 +9,10 @@ export default function GuestWaitingPage({ sessionData, onNavigate }) {
   const [participants, setParticipants] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [leaving, setLeaving] = useState(false)
+
+  const sessionId = sessionData?.session?.id
+  const participantId = sessionData?.participant?.id
 
   useEffect(() => {
     if (sessionData) {
@@ -18,9 +22,11 @@ export default function GuestWaitingPage({ sessionData, onNavigate }) {
   }, [sessionData])
 
   const loadSession = async () => {
+    if (!sessionId) return
+
     try {
-      console.log('Loading session for guest:', sessionData.session.id)
-      const { data, error } = await SessionService.getSession(sessionData.session.id)
+      console.log('Loading session for guest:', sessionId)
+      const { data, error } = await SessionService.getSession(sessionId)
       if (error) {
         console.error('Error loading session:', error)
         setError('Failed to load session')
@@ -38,16 +44,18 @@ export default function GuestWaitingPage({ sessionData, onNavigate }) {
   }
 
   const loadParticipants = async () => {
-    if (!sessionData?.session?.id) return
+    if (!sessionId) return
 
     try {
-      console.log('Loading participants for guest session:', sessionData.session.id)
-      const { data, error } = await SessionService.getLeaderboard(sessionData.session.id)
+      console.log('Loading participants for guest session:', sessionId)
+      const { data, error } = await SessionService.getLeaderboard(sessionId)
       if (error) {
         console.error('Error loading participants:', error)
       } else {
         console.log('Participants loaded for guest:', data)
-        setParticipants(data || [])
+        const activeParticipants =
+          (data || []).filter((participant) => participant?.is_active !== false && !participant?.left_at)
+        setParticipants(activeParticipants)
       }
     } catch (err) {
       console.error('Error loading participants:', err)
@@ -55,18 +63,18 @@ export default function GuestWaitingPage({ sessionData, onNavigate }) {
   }
 
   const subscribeToUpdates = () => {
-    if (!sessionData?.session?.id) return
+    if (!sessionId) return
 
-    console.log('Setting up real-time subscription for guest session:', sessionData.session.id)
+    console.log('Setting up real-time subscription for guest session:', sessionId)
     
     // Subscribe to participants joining
-    const participantsSubscription = SessionService.subscribeToParticipants(sessionData.session.id, (payload) => {
+    const participantsSubscription = SessionService.subscribeToParticipants(sessionId, (payload) => {
       console.log('Guest received participants update:', payload)
       loadParticipants()
     })
 
     // Subscribe to session updates (when host starts quiz or ends session)
-    const sessionSubscription = SessionService.subscribeToSession(sessionData.session.id, (payload) => {
+    const sessionSubscription = SessionService.subscribeToSession(sessionId, (payload) => {
       if (payload.new.current_question) {
         // Host started the quiz, redirect to play
         const updatedSessionData = { session: payload.new, participant: sessionData.participant }
@@ -90,9 +98,8 @@ export default function GuestWaitingPage({ sessionData, onNavigate }) {
       
       // Also check if session has been updated (fallback for real-time)
       try {
-        const { data: updatedSession, error } = await SessionService.getSession(sessionData.session.id)
+        const { data: updatedSession, error } = await SessionService.getSession(sessionId)
         if (error && error.code === 'PGRST116') {
-          // Session not found - host ended the session
           console.log('Guest periodic check - session not found, host ended session')
           clearInterval(interval)
           alert('❌ Session ended by host!\n\nThe quiz session has been ended and you have been disconnected.')
@@ -117,8 +124,30 @@ export default function GuestWaitingPage({ sessionData, onNavigate }) {
   }
 
   const handleLeaveSession = async () => {
-    // For guests, we can just navigate away
-    onNavigate('guest-welcome')
+    if (!sessionId || !participantId) {
+      onNavigate('guest-welcome')
+      return
+    }
+
+    try {
+      setLeaving(true)
+      console.log('Guest waiting page: leaving session', { sessionId, participantId })
+      const { error: leaveError } = await SessionService.leaveSession(sessionId, participantId)
+
+      if (leaveError) {
+        console.error('Failed to leave session from waiting page:', leaveError)
+        setError('Failed to leave session. Please try again.')
+        setLeaving(false)
+        return
+      }
+
+      setLeaving(false)
+      onNavigate('guest-welcome')
+    } catch (err) {
+      console.error('Error leaving session from waiting page:', err)
+      setError('Failed to leave session. Please try again.')
+      setLeaving(false)
+    }
   }
 
   if (loading) {
@@ -172,9 +201,10 @@ export default function GuestWaitingPage({ sessionData, onNavigate }) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleLeaveSession}
-            className="bg-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors text-sm"
+          disabled={leaving}
+          className="bg-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Leave Room
+          {leaving ? 'Leaving...' : 'Leave Room'}
           </motion.button>
         </div>
 

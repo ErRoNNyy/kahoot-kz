@@ -280,6 +280,30 @@ export class ResponsesService {
     }
   }
 
+  // Delete all responses submitted by a specific participant in a session
+  static async deleteParticipantResponses(sessionId, participantId) {
+    console.log('ResponsesService.deleteParticipantResponses called with:', { sessionId, participantId })
+
+    if (!sessionId || !participantId) {
+      console.warn('deleteParticipantResponses skipped - missing sessionId or participantId')
+      return { error: null }
+    }
+
+    try {
+      const { error } = await supabase
+        .from('responses')
+        .delete()
+        .eq('session_id', sessionId)
+        .eq('participant_id', participantId)
+
+      console.log('ResponsesService.deleteParticipantResponses result:', { error })
+      return { error }
+    } catch (err) {
+      console.error('Error in deleteParticipantResponses:', err)
+      return { error: err }
+    }
+  }
+
   // Get response statistics for a question
   static async getQuestionStats(sessionId, questionId) {
     console.log('ResponsesService.getQuestionStats called with:', { sessionId, questionId })

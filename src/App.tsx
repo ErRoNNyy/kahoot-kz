@@ -80,14 +80,14 @@ function App() {
 
   const handleNavigation = (page: string, data: any = null) => {
     // Clean up session data when navigating away from session pages (but not to quiz-related pages)
-    if (currentPage === 'host-session' || currentPage === 'join-session' || currentPage === 'play-quiz' || currentPage === 'guest-waiting') {
+  if (currentPage === 'host-session' || currentPage === 'join-session' || currentPage === 'play-quiz' || currentPage === 'guest-waiting') {
       // Don't clear sessionData if navigating to quiz-related pages
-      if (!['play-quiz', 'quiz-host-control', 'guest-waiting'].includes(page)) {
-        if (sessionData?.id) {
-          console.log('Cleaning up session on navigation:', sessionData.id)
-          SessionService.cleanupSession(sessionData.id)
-        }
-        setSessionData(null)
+    if (!['play-quiz', 'quiz-host-control', 'guest-waiting'].includes(page)) {
+      if (sessionData?.id) {
+        console.log('Cleaning up session on navigation:', sessionData.id)
+        SessionService.cleanupSession(sessionData.id)
+      }
+      setSessionData(null)
       }
     }
 

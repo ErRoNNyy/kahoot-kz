@@ -59,7 +59,9 @@ export class SessionService {
     const participantData = {
       session_id: session.id,
       nickname,
-      score: 0
+      score: 0,
+      is_active: true,
+      left_at: null
     }
     
     if (isGuest) {
@@ -81,6 +83,41 @@ export class SessionService {
     console.log('Participant creation result:', { data, error })
     
     return { data: { session, participant: data }, error }
+  }
+
+  // Allow a participant to leave a session
+  static async leaveSession(sessionId, participantId) {
+    console.log('SessionService.leaveSession called with:', { sessionId, participantId })
+
+    if (!sessionId || !participantId) {
+      const error = { message: 'Missing session or participant information' }
+      console.error('SessionService.leaveSession validation error:', error)
+      return { error }
+    }
+
+    try {
+      const updates = {
+        is_active: false,
+        left_at: new Date().toISOString()
+      }
+
+      const { error } = await supabase
+        .from('session_participants')
+        .update(updates)
+        .eq('session_id', sessionId)
+        .eq('id', participantId)
+
+      if (error) {
+        console.error('SessionService.leaveSession failed to remove participant:', error)
+        return { error }
+      }
+
+      console.log('SessionService.leaveSession completed successfully')
+      return { error: null }
+    } catch (err) {
+      console.error('SessionService.leaveSession encountered an exception:', err)
+      return { error: err }
+    }
   }
 
   // Get session details
