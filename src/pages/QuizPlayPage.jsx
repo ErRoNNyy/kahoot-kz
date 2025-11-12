@@ -404,21 +404,23 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600 p-6">
+        <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-emerald-500/30 blur-3xl"></div>
+        <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-teal-400/25 blur-3xl"></div>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-2xl p-8 shadow-xl text-center max-w-md"
+          className="relative mx-auto max-w-md rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-8 text-center text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
         >
-          <div className="text-6xl mb-4">❌</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Error</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <div className="mb-4 text-6xl">❌</div>
+          <h2 className="mb-4 text-2xl font-bold text-emerald-900">Error</h2>
+          <p className="mb-6 text-emerald-600">{error}</p>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleLeaveSession}
             disabled={leaving}
-            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-full bg-emerald-500 px-6 py-3 font-semibold text-emerald-950 transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {leaving ? 'Leaving...' : 'Leave Session'}
           </motion.button>
@@ -429,49 +431,51 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
 
   if (quizEnded) {
     return (
-      <div className="min-h-screen p-6">
-        <div className="max-w-4xl mx-auto">
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600 px-6 py-8">
+        <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-emerald-500/30 blur-3xl"></div>
+        <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-teal-400/25 blur-3xl"></div>
+        <div className="relative mx-auto max-w-4xl">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl p-8 shadow-xl text-center"
+            className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-10 text-center text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-2xl"
           >
-            <div className="text-6xl mb-6">🎉</div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">Quiz Completed!</h1>
-            <p className="text-gray-600 mb-6">
+            <div className="mb-6 text-6xl">🎉</div>
+            <h1 className="mb-4 text-3xl font-bold text-emerald-900">Quiz Completed!</h1>
+            <p className="mb-6 text-emerald-600">
               Thanks for playing! You can hang tight to celebrate with the host or leave whenever you’re ready.
             </p>
             
-            <div className="bg-purple-50 rounded-lg p-6 mb-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Final Leaderboard</h3>
+            <div className="mb-6 rounded-2xl border border-emerald-200/60 bg-emerald-100/60 p-6">
+              <h3 className="mb-4 text-xl font-bold text-emerald-900">Final Leaderboard</h3>
               <div className="space-y-3">
                 {leaderboard
                   .sort((a, b) => (b.score || 0) - (a.score || 0))
                   .map((participant, index) => (
                     <div
                       key={participant.id}
-                      className={`flex items-center justify-between p-3 rounded-lg ${
-                        index === 0 ? 'bg-yellow-50 border border-yellow-200' :
-                        index === 1 ? 'bg-gray-50 border border-gray-200' :
-                        index === 2 ? 'bg-orange-50 border border-orange-200' :
-                        'bg-gray-50'
+                      className={`flex items-center justify-between rounded-lg border p-3 ${
+                        index === 0 ? 'border-yellow-200 bg-yellow-50' :
+                        index === 1 ? 'border-emerald-100/60 bg-white/85' :
+                        index === 2 ? 'border-orange-200 bg-orange-50' :
+                        'border-emerald-100/60 bg-white/80'
                       }`}
                     >
                       <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
-                          index === 0 ? 'bg-yellow-500' :
-                          index === 1 ? 'bg-gray-400' :
-                          index === 2 ? 'bg-orange-500' :
-                          'bg-gray-300'
+                        <div className={`flex h-8 w-8 items-center justify-center rounded-full font-bold text-emerald-950 ${
+                          index === 0 ? 'bg-yellow-400' :
+                          index === 1 ? 'bg-emerald-300' :
+                          index === 2 ? 'bg-orange-400' :
+                          'bg-emerald-200'
                         }`}>
                           {index + 1}
                         </div>
-                        <span className="font-medium text-gray-800">
+                        <span className="font-medium text-emerald-900">
                           {participant.nickname || 'Anonymous'}
                           {participant.id === participantId && ' (You)'}
                         </span>
                       </div>
-                      <div className="text-lg font-bold text-gray-800">
+                      <div className="text-lg font-bold text-emerald-900">
                         {participant.score || 0} points
                       </div>
                     </div>
@@ -485,12 +489,12 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
                 whileTap={{ scale: 0.95 }}
                 onClick={handleLeaveSession}
                 disabled={leaving}
-                className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-full bg-emerald-500 px-6 py-3 font-semibold text-emerald-950 transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {leaving ? 'Leaving...' : 'Leave Session'}
               </motion.button>
             </div>
-            <p className="text-sm text-gray-500 mt-4">
+            <p className="mt-4 text-sm text-emerald-600">
               If the host starts another round later, just rejoin with the new room code.
             </p>
           </motion.div>
@@ -501,29 +505,31 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
 
   if (waitingForHost) {
     return (
-      <div className="min-h-screen p-6">
-        <div className="max-w-4xl mx-auto">
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600 px-6 py-8">
+        <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-emerald-500/30 blur-3xl"></div>
+        <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-teal-400/25 blur-3xl"></div>
+        <div className="relative mx-auto max-w-4xl">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl p-8 shadow-xl text-center"
+            className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-10 text-center text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-2xl"
           >
-            <div className="text-6xl mb-6">⏳</div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">Waiting for Host</h1>
-            <p className="text-gray-600 mb-6">The host will start the quiz soon</p>
+            <div className="mb-6 text-6xl">⏳</div>
+            <h1 className="mb-4 text-3xl font-bold text-emerald-900">Waiting for Host</h1>
+            <p className="mb-6 text-emerald-600">The host will start the quiz soon</p>
             
-            <div className="bg-purple-50 rounded-lg p-6 mb-6">
+            <div className="mb-6 rounded-2xl border border-emerald-200/60 bg-emerald-100/60 p-6">
               <div className="text-center">
-                <p className="text-sm text-gray-600 mb-2">Room Code</p>
-                <div className="text-3xl font-bold text-purple-600 font-mono">
+                <p className="mb-2 text-sm text-emerald-700">Room Code</p>
+                <div className="font-mono text-3xl font-bold text-emerald-900 tracking-widest">
                   {sessionData.session ? sessionData.session.code : sessionData.code}
                 </div>
               </div>
             </div>
 
             <div className="text-center">
-              <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-gray-600 mb-4">Waiting for quiz to start...</p>
+              <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-emerald-400 border-t-transparent"></div>
+              <p className="mb-4 text-emerald-600">Waiting for quiz to start...</p>
               <div className="flex justify-center space-x-3">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -532,7 +538,7 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
                     console.log('Guest manually refreshing session...')
                     loadSession()
                   }}
-                  className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                  className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-400"
                 >
                   Refresh Session
                 </motion.button>
@@ -541,7 +547,7 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
                   whileTap={{ scale: 0.95 }}
                   onClick={handleLeaveSession}
                   disabled={leaving}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {leaving ? 'Leaving...' : 'Leave Session'}
                 </motion.button>
@@ -554,58 +560,60 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600 px-6 py-8">
+      <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-emerald-500/30 blur-3xl"></div>
+      <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-teal-400/25 blur-3xl"></div>
+      <div className="relative mx-auto max-w-6xl">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="mb-2 text-3xl font-bold text-white">
               {quiz?.title || 'Quiz Session'}
             </h1>
-            <p className="text-purple-200">Session Code: {sessionData.session ? sessionData.session.code : sessionData.code}</p>
+            <p className="text-emerald-100">Session Code: {sessionData.session ? sessionData.session.code : sessionData.code}</p>
           </div>
           <div className="text-right">
-            <div className="text-white text-sm">Participants: {participants.length}</div>
+            <div className="text-sm text-white">Participants: {participants.length}</div>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleLeaveSession}
               disabled={leaving}
-              className="bg-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mt-3 rounded-full bg-emerald-500/20 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {leaving ? 'Leaving...' : 'Leave Session'}
             </motion.button>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid gap-8 lg:grid-cols-3">
           {/* Question Area */}
           <div className="lg:col-span-2">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl p-6 shadow-xl"
+              className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-6 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
             >
               {currentQuestion && questionActive && !showResults ? (
                 <div>
                   {/* Timer */}
-                  <div className="flex justify-between items-center mb-6">
-                    <div className="text-sm text-gray-600">Question Time</div>
-                    <div className={`text-2xl font-bold ${timeLeft <= 10 ? 'text-red-600' : 'text-purple-600'}`}>
+                  <div className="mb-6 flex items-center justify-between">
+                    <div className="text-sm text-emerald-600">Question Time</div>
+                    <div className={`text-2xl font-bold ${timeLeft <= 10 ? 'text-red-500' : 'text-emerald-600'}`}>
                       {timeLeft}s
                     </div>
                   </div>
 
                   {/* Question */}
                   <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                    <h2 className="mb-4 text-2xl font-bold text-emerald-900">
                       {currentQuestion.text}
                     </h2>
                     {currentQuestion.image_url && (
                       <img
                         src={currentQuestion.image_url}
                         alt="Question"
-                        className="max-h-64 mx-auto rounded-lg shadow-lg"
+                        className="mx-auto max-h-64 rounded-lg shadow-lg"
                       />
                     )}
                   </div>
@@ -620,19 +628,19 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
                           whileTap={{ scale: 0.98 }}
                           onClick={() => setSelectedAnswer(answer)}
                           disabled={answerSubmitted}
-                          className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
+                          className={`w-full rounded-lg border-2 p-4 text-left transition-all ${
                             selectedAnswer?.id === answer.id
-                              ? 'border-purple-500 bg-purple-50'
-                              : 'border-gray-200 hover:border-gray-300'
-                          } ${answerSubmitted ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                              ? 'border-emerald-400 bg-emerald-100/60 shadow-[0_10px_25px_-20px_rgba(16,185,129,0.8)]'
+                              : 'border-emerald-100/60 bg-white/80 hover:border-emerald-200'
+                          } ${answerSubmitted ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                         >
                           <div className="flex items-center">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold mr-4 ${
-                              selectedAnswer?.id === answer.id ? 'bg-purple-600' : 'bg-gray-400'
+                            <div className={`mr-4 flex h-8 w-8 items-center justify-center rounded-full font-bold text-emerald-950 ${
+                              selectedAnswer?.id === answer.id ? 'bg-emerald-400' : 'bg-emerald-200'
                             }`}>
                               {String.fromCharCode(65 + index)}
                             </div>
-                            <span className="text-gray-800">{answer.text}</span>
+                            <span className="text-emerald-900">{answer.text}</span>
                           </div>
                         </motion.button>
                       ))}
@@ -648,19 +656,19 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
                           whileTap={{ scale: 0.98 }}
                           onClick={() => setSelectedAnswer(answer)}
                           disabled={answerSubmitted}
-                          className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
+                          className={`w-full rounded-lg border-2 p-4 text-left transition-all ${
                             selectedAnswer?.id === answer.id
-                              ? 'border-purple-500 bg-purple-50'
-                              : 'border-gray-200 hover:border-gray-300'
-                          } ${answerSubmitted ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                              ? 'border-emerald-400 bg-emerald-100/60 shadow-[0_10px_25px_-20px_rgba(16,185,129,0.8)]'
+                              : 'border-emerald-100/60 bg-white/80 hover:border-emerald-200'
+                          } ${answerSubmitted ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                         >
                           <div className="flex items-center">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold mr-4 ${
-                              selectedAnswer?.id === answer.id ? 'bg-purple-600' : 'bg-gray-400'
+                            <div className={`mr-4 flex h-8 w-8 items-center justify-center rounded-full font-bold text-emerald-950 ${
+                              selectedAnswer?.id === answer.id ? 'bg-emerald-400' : 'bg-emerald-200'
                             }`}>
                               {answer.text === 'True' ? 'T' : 'F'}
                             </div>
-                            <span className="text-gray-800">{answer.text}</span>
+                            <span className="text-emerald-900">{answer.text}</span>
                           </div>
                         </motion.button>
                       ))}
@@ -677,7 +685,7 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
                           is_correct: false 
                         })}
                         disabled={answerSubmitted}
-                        className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full rounded-xl border border-emerald-200/60 bg-white/85 p-4 text-emerald-900 shadow-inner focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:cursor-not-allowed disabled:opacity-50"
                         placeholder="Type your answer here..."
                         rows={4}
                       />
@@ -689,17 +697,17 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
                     whileTap={{ scale: 0.98 }}
                     onClick={submitAnswer}
                     disabled={!selectedAnswer || answerSubmitted}
-                    className="w-full mt-6 bg-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="mt-6 w-full rounded-full bg-emerald-500 py-3 px-4 font-semibold text-emerald-950 transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {answerSubmitted ? 'Answer Submitted' : 'Submit Answer'}
                   </motion.button>
                 </div>
               ) : showResults ? (
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Question Results</h2>
+                  <h2 className="mb-6 text-2xl font-bold text-emerald-900">Question Results</h2>
                   
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                    <h3 className="mb-4 text-lg font-semibold text-emerald-800">
                       {currentQuestion?.text}
                     </h3>
                     
@@ -707,20 +715,20 @@ export default function QuizPlayPage({ sessionData, onNavigate }) {
                       {currentQuestion?.answers?.map((answer, index) => (
                         <div
                           key={answer.id}
-                          className={`p-4 rounded-lg border-2 ${
+                          className={`rounded-lg border-2 p-4 ${
                             answer.is_correct 
-                              ? 'border-green-500 bg-green-50' 
-                              : 'border-gray-200 bg-gray-50'
+                              ? 'border-emerald-300 bg-emerald-100/60' 
+                              : 'border-emerald-100/60 bg-white/80'
                           }`}
                         >
                           <div className="flex items-center">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold mr-4 ${
-                              answer.is_correct ? 'bg-green-500' : 'bg-gray-400'
+                            <div className={`mr-4 flex h-8 w-8 items-center justify-center rounded-full font-bold text-emerald-950 ${
+                              answer.is_correct ? 'bg-emerald-400' : 'bg-emerald-200'
                             }`}>
                               {String.fromCharCode(65 + index)}
                             </div>
-                            <span className="text-gray-800">{answer.text}</span>
-                            {answer.is_correct && <span className="ml-2 text-green-600 font-bold">✓</span>}
+                            <span className="text-emerald-900">{answer.text}</span>
+                            {answer.is_correct && <span className="ml-2 font-bold text-emerald-600">✓</span>}
                           </div>
                         </div>
                       ))}

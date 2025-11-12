@@ -152,11 +152,11 @@ export default function GuestWaitingPage({ sessionData, onNavigate }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 border-4 border-white border-t-transparent rounded-full"
+          className="w-12 h-12 border-4 border-emerald-200 border-t-transparent rounded-full"
         />
       </div>
     )
@@ -164,20 +164,23 @@ export default function GuestWaitingPage({ sessionData, onNavigate }) {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600 p-6">
+        <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-emerald-500/30 blur-3xl"></div>
+        <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-teal-400/25 blur-3xl"></div>
+
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-2xl p-8 shadow-xl text-center max-w-md"
+          className="relative mx-auto max-w-md rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-8 text-center text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
         >
-          <div className="text-6xl mb-4">❌</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Error</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <div className="mb-4 text-6xl">❌</div>
+          <h2 className="mb-4 text-2xl font-bold text-emerald-900">Error</h2>
+          <p className="mb-6 text-emerald-600">{error}</p>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => onNavigate('guest-welcome')}
-            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+            className="rounded-full bg-emerald-500 px-6 py-3 font-semibold text-emerald-950 transition-colors hover:bg-emerald-400"
           >
             Back to Welcome
           </motion.button>
@@ -187,22 +190,25 @@ export default function GuestWaitingPage({ sessionData, onNavigate }) {
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600 px-6 py-8">
+      <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-emerald-500/30 blur-3xl"></div>
+      <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-teal-400/25 blur-3xl"></div>
+
+      <div className="relative mx-auto max-w-4xl">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="mb-2 text-3xl font-bold text-white">
               {session?.quizzes?.title || 'Quiz Session'}
             </h1>
-            <p className="text-purple-200">Room Code: {sessionData.session.code}</p>
+            <p className="text-emerald-100">Room Code: {sessionData.session.code}</p>
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleLeaveSession}
           disabled={leaving}
-          className="bg-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-full border border-emerald-300/60 bg-emerald-500/20 px-4 py-2 text-sm font-semibold text-emerald-50 transition-colors hover:bg-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-50"
           >
           {leaving ? 'Leaving...' : 'Leave Room'}
           </motion.button>
@@ -213,27 +219,27 @@ export default function GuestWaitingPage({ sessionData, onNavigate }) {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-8 shadow-xl"
+            className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-8 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
           >
-            <div className="text-center mb-6">
-              <div className="text-6xl mb-4">⏳</div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Waiting for Host</h2>
-              <p className="text-gray-600">The host will start the quiz soon</p>
+            <div className="mb-6 text-center">
+              <div className="mb-4 text-6xl">⏳</div>
+              <h2 className="mb-2 text-2xl font-bold text-emerald-900">Waiting for Host</h2>
+              <p className="text-emerald-600">The host will start the quiz soon</p>
             </div>
 
-            <div className="bg-purple-50 rounded-lg p-6 mb-6">
+            <div className="mb-6 rounded-2xl border border-emerald-100/80 bg-emerald-100/60 p-6 text-center">
               <div className="text-center">
-                <p className="text-sm text-gray-600 mb-2">Room Code</p>
-                <div className="text-3xl font-bold text-purple-600 font-mono">
+                <p className="mb-2 text-sm text-emerald-700">Room Code</p>
+                <div className="font-mono text-3xl font-bold text-emerald-900 tracking-wider">
                   {sessionData.session.code}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Share this code with friends!</p>
+                <p className="mt-2 text-xs text-emerald-600">Share this code with friends!</p>
               </div>
             </div>
 
             <div className="text-center">
-              <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-gray-600">Waiting for quiz to start...</p>
+              <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-emerald-400 border-t-transparent"></div>
+              <p className="text-emerald-600">Waiting for quiz to start...</p>
             </div>
           </motion.div>
 
@@ -242,23 +248,23 @@ export default function GuestWaitingPage({ sessionData, onNavigate }) {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white rounded-2xl p-8 shadow-xl"
+            className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-8 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
           >
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-800">Participants ({participants.length})</h3>
+            <div className="mb-6 flex items-center justify-between">
+              <h3 className="text-xl font-bold text-emerald-900">Participants ({participants.length})</h3>
               <button
                 onClick={loadParticipants}
-                className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
+                className="rounded-full border border-emerald-300/60 bg-emerald-500/20 px-3 py-1 text-sm font-semibold text-emerald-900 transition-colors hover:bg-emerald-500/30"
               >
                 🔄 Refresh
               </button>
             </div>
 
             {participants.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="text-4xl mb-2">👥</div>
-                <p className="text-gray-600">No participants yet</p>
-                <p className="text-sm text-gray-500">You're the first one here!</p>
+              <div className="py-8 text-center">
+                <div className="mb-2 text-4xl">👥</div>
+                <p className="text-emerald-600">No participants yet</p>
+                <p className="text-sm text-emerald-500">You're the first one here!</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -268,29 +274,29 @@ export default function GuestWaitingPage({ sessionData, onNavigate }) {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className={`flex items-center justify-between p-3 rounded-lg ${
+                    className={`flex items-center justify-between rounded-lg p-3 ${
                       participant.user_id === user.id 
-                        ? 'bg-purple-50 border-2 border-purple-200' 
-                        : 'bg-gray-50'
+                        ? 'border-2 border-emerald-300 bg-emerald-100/60 shadow-[0_12px_25px_-20px_rgba(16,185,129,0.9)]' 
+                        : 'border border-emerald-100/60 bg-white/80'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-400 text-sm font-bold text-emerald-950">
                         {index + 1}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-800">
+                        <p className="font-medium text-emerald-900">
                           {participant.nickname || 'Anonymous'}
                           {participant.user_id === user.id && ' (You)'}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-emerald-500">
                           Joined {new Date(participant.created_at).toLocaleString()}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-purple-600">{participant.score || 0}</p>
-                      <p className="text-xs text-gray-500">points</p>
+                      <p className="font-bold text-emerald-600">{participant.score || 0}</p>
+                      <p className="text-xs text-emerald-500">points</p>
                     </div>
                   </motion.div>
                 ))}

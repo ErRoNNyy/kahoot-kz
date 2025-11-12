@@ -411,16 +411,16 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-white rounded-2xl p-8 shadow-xl max-w-2xl mx-auto"
+            className="mx-auto max-w-2xl rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-8 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
           >
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">Quiz Details</h2>
-            <p className="text-gray-600 mb-8">Let's start by creating your quiz title and description.</p>
+            <h2 className="mb-6 text-3xl font-bold text-emerald-900">Quiz Details</h2>
+            <p className="mb-8 text-emerald-600">Let's start by creating your quiz title and description.</p>
 
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6"
+                className="mb-6 rounded-lg border border-red-400/40 bg-red-500/15 px-4 py-3 text-red-100"
               >
                 {error}
               </motion.div>
@@ -428,26 +428,26 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
 
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-emerald-800">
                   Quiz Title *
                 </label>
                 <input
                   type="text"
                   value={quizData.title}
                   onChange={(e) => setQuizData({ ...quizData, title: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full rounded-xl border border-emerald-200/60 bg-white/85 px-4 py-3 text-emerald-900 shadow-inner focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-200"
                   placeholder="Enter quiz title"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-emerald-800">
                   Description
                 </label>
                 <textarea
                   value={quizData.description}
                   onChange={(e) => setQuizData({ ...quizData, description: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full rounded-xl border border-emerald-200/60 bg-white/85 px-4 py-3 text-emerald-900 shadow-inner focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-200"
                   placeholder="Enter quiz description"
                   rows={4}
                 />
@@ -461,16 +461,16 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-white rounded-2xl p-8 shadow-xl max-w-4xl mx-auto"
+            className="mx-auto max-w-4xl rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-8 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
           >
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">Add Questions</h2>
-            <p className="text-gray-600 mb-8">Create questions for your quiz. You can add multiple questions.</p>
+            <h2 className="mb-6 text-3xl font-bold text-emerald-900">Add Questions</h2>
+            <p className="mb-8 text-emerald-600">Create questions for your quiz. You can add multiple questions.</p>
 
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6"
+                className="mb-6 rounded-lg border border-red-400/40 bg-red-500/15 px-4 py-3 text-red-100"
               >
                 {error}
               </motion.div>
@@ -482,7 +482,7 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                 <div className="space-y-6">
                   {/* Question Type Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                    <label className="mb-3 block text-sm font-medium text-emerald-800">
                       Question Type *
                     </label>
                     <div className="grid grid-cols-3 gap-3">
@@ -490,10 +490,10 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => selectQuestionType('MCQ')}
-                        className={`p-4 rounded-lg border-2 transition-all ${
+                        className={`rounded-2xl border-2 p-4 transition-all ${
                           currentQuestion.questionType === 'MCQ'
-                            ? 'border-purple-500 bg-purple-50 text-purple-700'
-                            : 'border-gray-200 hover:border-gray-300'
+                            ? 'border-emerald-400 bg-emerald-100/60 text-emerald-700 shadow-[0_10px_25px_-20px_rgba(16,185,129,0.8)]'
+                            : 'border-emerald-100/60 bg-white/80 hover:border-emerald-200'
                         }`}
                       >
                         <div className="text-2xl mb-2">📝</div>
@@ -504,10 +504,10 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => selectQuestionType('True/False')}
-                        className={`p-4 rounded-lg border-2 transition-all ${
+                        className={`rounded-2xl border-2 p-4 transition-all ${
                           currentQuestion.questionType === 'True/False'
-                            ? 'border-purple-500 bg-purple-50 text-purple-700'
-                            : 'border-gray-200 hover:border-gray-300'
+                            ? 'border-emerald-400 bg-emerald-100/60 text-emerald-700 shadow-[0_10px_25px_-20px_rgba(16,185,129,0.8)]'
+                            : 'border-emerald-100/60 bg-white/80 hover:border-emerald-200'
                         }`}
                       >
                         <div className="text-2xl mb-2">✅</div>
@@ -518,10 +518,10 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => selectQuestionType('Short Answer')}
-                        className={`p-4 rounded-lg border-2 transition-all ${
+                        className={`rounded-2xl border-2 p-4 transition-all ${
                           currentQuestion.questionType === 'Short Answer'
-                            ? 'border-purple-500 bg-purple-50 text-purple-700'
-                            : 'border-gray-200 hover:border-gray-300'
+                            ? 'border-emerald-400 bg-emerald-100/60 text-emerald-700 shadow-[0_10px_25px_-20px_rgba(16,185,129,0.8)]'
+                            : 'border-emerald-100/60 bg-white/80 hover:border-emerald-200'
                         }`}
                       >
                         <div className="text-2xl mb-2">✍️</div>
@@ -532,38 +532,37 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
 
                   {/* Question Text */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-emerald-800">
                       Question Text *
                     </label>
                     <textarea
                       value={currentQuestion.text}
                       onChange={(e) => {
                         setCurrentQuestion({ ...currentQuestion, text: e.target.value })
-                        // Clear validation error when user starts typing
                         if (validationErrors.questionText) {
                           setValidationErrors({ ...validationErrors, questionText: null })
                         }
                       }}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                        validationErrors.questionText ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                      className={`w-full rounded-xl border px-4 py-3 focus:outline-none focus:ring-4 focus:ring-emerald-200 ${
+                        validationErrors.questionText ? 'border-red-300 bg-red-50' : 'border-emerald-200/60 bg-white/85 shadow-inner'
                       }`}
                       placeholder="Enter your question"
                       rows={3}
                     />
                     {validationErrors.questionText && (
-                      <p className="text-red-500 text-sm mt-1">{validationErrors.questionText}</p>
+                      <p className="mt-1 text-sm text-red-500">{validationErrors.questionText}</p>
                     )}
-                    <p className="text-gray-500 text-xs mt-1">
+                    <p className="mt-1 text-xs text-emerald-600">
                       {currentQuestion.text.length}/10 characters minimum
                     </p>
                   </div>
 
                   {/* Image Upload */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-emerald-800">
                       Question Image (Optional)
                     </label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <div className="rounded-2xl border-2 border-dashed border-emerald-200/60 bg-white/70 p-6 text-center shadow-inner">
                       <input
                         type="file"
                         accept="image/*"
@@ -577,14 +576,14 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                             <img
                               src={URL.createObjectURL(currentQuestion.image)}
                               alt="Preview"
-                              className="max-h-32 mx-auto rounded-lg"
+                              className="mx-auto max-h-32 rounded-lg shadow"
                             />
-                            <p className="text-sm text-gray-600 mt-2">Click to change image</p>
+                            <p className="mt-2 text-sm text-emerald-600">Click to change image</p>
                           </div>
                         ) : (
                           <div>
-                            <div className="text-4xl mb-2">📷</div>
-                            <p className="text-gray-600">Click to upload an image</p>
+                            <div className="mb-2 text-4xl">📷</div>
+                            <p className="text-emerald-600">Click to upload an image</p>
                           </div>
                         )}
                       </label>
@@ -593,14 +592,14 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
 
                   {/* Time Limit */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-emerald-800">
                       Time Limit (seconds)
                     </label>
                     <input
                       type="number"
                       value={currentQuestion.timeLimit}
                       onChange={(e) => setCurrentQuestion({ ...currentQuestion, timeLimit: parseInt(e.target.value) || 30 })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full rounded-xl border border-emerald-200/60 bg-white/85 px-4 py-3 text-emerald-900 shadow-inner focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-200"
                       min="5"
                       max="300"
                     />
@@ -609,7 +608,7 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                   {/* Answers based on question type */}
                   {currentQuestion.questionType === 'MCQ' && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-emerald-800">
                         Multiple Choice Answers *
                       </label>
                       <div className="space-y-3">
@@ -625,12 +624,11 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                                   is_correct: i === index
                                 }))
                                 setCurrentQuestion({ ...currentQuestion, answers: newAnswers })
-                                // Clear validation error when user selects correct answer
                                 if (validationErrors.correctAnswer) {
                                   setValidationErrors({ ...validationErrors, correctAnswer: null })
                                 }
                               }}
-                              className="w-4 h-4 text-purple-600"
+                              className="h-4 w-4 text-emerald-500"
                             />
                             <input
                               type="text"
@@ -639,13 +637,12 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                                 const newAnswers = [...currentQuestion.answers]
                                 newAnswers[index] = { ...answer, text: e.target.value }
                                 setCurrentQuestion({ ...currentQuestion, answers: newAnswers })
-                                // Clear validation error when user starts typing
                                 if (validationErrors.answers) {
                                   setValidationErrors({ ...validationErrors, answers: null })
                                 }
                               }}
-                              className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                                !answer.text.trim() && validationErrors.answers ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                              className={`flex-1 rounded-xl border px-4 py-3 focus:outline-none focus:ring-4 focus:ring-emerald-200 ${
+                                !answer.text.trim() && validationErrors.answers ? 'border-red-300 bg-red-50' : 'border-emerald-200/60 bg-white/85 shadow-inner'
                               }`}
                               placeholder={`Answer ${index + 1}`}
                             />
@@ -653,12 +650,12 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                         ))}
                       </div>
                       {validationErrors.answers && (
-                        <p className="text-red-500 text-sm mt-1">{validationErrors.answers}</p>
+                        <p className="mt-1 text-sm text-red-500">{validationErrors.answers}</p>
                       )}
                       {validationErrors.correctAnswer && (
-                        <p className="text-red-500 text-sm mt-1">{validationErrors.correctAnswer}</p>
+                        <p className="mt-1 text-sm text-red-500">{validationErrors.correctAnswer}</p>
                       )}
-                      <p className="text-gray-500 text-xs mt-1">
+                      <p className="mt-1 text-xs text-emerald-600">
                         At least 2 answers required, mark one as correct
                       </p>
                     </div>
@@ -666,7 +663,7 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
 
                   {currentQuestion.questionType === 'True/False' && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-emerald-800">
                         Correct Answer *
                       </label>
                       <div className="space-y-3">
@@ -682,9 +679,9 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                               ]
                               setCurrentQuestion({ ...currentQuestion, answers: newAnswers })
                             }}
-                            className="w-4 h-4 text-purple-600"
+                            className="h-4 w-4 text-emerald-500"
                           />
-                          <span className="text-gray-800">True</span>
+                          <span className="text-emerald-900">True</span>
                         </div>
                         <div className="flex items-center space-x-3">
                           <input
@@ -698,9 +695,9 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                               ]
                               setCurrentQuestion({ ...currentQuestion, answers: newAnswers })
                             }}
-                            className="w-4 h-4 text-purple-600"
+                            className="h-4 w-4 text-emerald-500"
                           />
-                          <span className="text-gray-800">False</span>
+                          <span className="text-emerald-900">False</span>
                         </div>
                       </div>
                     </div>
@@ -708,7 +705,7 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
 
                   {currentQuestion.questionType === 'Short Answer' && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-emerald-800">
                         Acceptable Answers (one per line) *
                       </label>
                       <textarea
@@ -720,7 +717,7 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                           }))
                           setCurrentQuestion({ ...currentQuestion, answers })
                         }}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="w-full rounded-xl border border-emerald-200/60 bg-white/85 px-4 py-3 text-emerald-900 shadow-inner focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-200"
                         placeholder="Enter acceptable answers, one per line"
                         rows={4}
                       />
@@ -731,7 +728,7 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={addQuestion}
-                    className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors"
+                    className="w-full rounded-full bg-emerald-500 py-3 px-4 font-semibold text-emerald-950 transition-colors hover:bg-emerald-400"
                   >
                     Add Question
                   </motion.button>
@@ -740,21 +737,21 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
 
               {/* Questions List */}
               <div className="lg:col-span-1">
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Questions ({questions.length})</h3>
+                <div className="rounded-2xl border border-emerald-200/60 bg-emerald-100/60 p-6">
+                  <h3 className="mb-4 text-lg font-semibold text-emerald-900">Questions ({questions.length})</h3>
                   {questions.length === 0 ? (
-                    <p className="text-gray-500 text-sm">No questions added yet</p>
+                    <p className="text-sm text-emerald-600">No questions added yet</p>
                   ) : (
                     <div className="space-y-2">
                       {questions.map((question, index) => (
-                        <div key={index} className="bg-white rounded-lg p-3 border">
+                        <div key={index} className="rounded-lg border border-emerald-100/60 bg-white/85 p-3 shadow-sm">
                           <div className="flex items-center justify-between">
-                            <p className="text-sm text-gray-700 truncate">{question.text}</p>
-                            <span className="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded-full">
+                            <p className="truncate text-sm text-emerald-900">{question.text}</p>
+                            <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs text-emerald-600">
                               #{index + 1}
                             </span>
                           </div>
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className="mt-1 text-xs text-emerald-500">
                             {question.questionType} • {question.timeLimit}s
                           </div>
                         </div>
@@ -772,50 +769,53 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-white rounded-2xl p-8 shadow-xl max-w-4xl mx-auto"
+            className="mx-auto max-w-4xl rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-8 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
           >
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">Review & Finish</h2>
-            <p className="text-gray-600 mb-8">Review your quiz before saving it.</p>
+            <h2 className="mb-6 text-3xl font-bold text-emerald-900">Review & Finish</h2>
+            <p className="mb-8 text-emerald-600">Review your quiz before saving it.</p>
 
             <div className="space-y-6">
               {/* Quiz Info */}
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">Quiz Information</h3>
+              <div className="rounded-2xl border border-emerald-200/60 bg-emerald-100/60 p-6">
+                <h3 className="mb-4 text-xl font-semibold text-emerald-900">Quiz Information</h3>
                 <div>
-                  <h4 className="font-medium text-gray-700">Title:</h4>
-                  <p className="text-gray-600">{quizData.title}</p>
+                  <h4 className="font-medium text-emerald-800">Title:</h4>
+                  <p className="text-emerald-600">{quizData.title}</p>
                 </div>
                 {quizData.description && (
                   <div className="mt-3">
-                    <h4 className="font-medium text-gray-700">Description:</h4>
-                    <p className="text-gray-600">{quizData.description}</p>
+                    <h4 className="font-medium text-emerald-800">Description:</h4>
+                    <p className="text-emerald-600">{quizData.description}</p>
                   </div>
                 )}
               </div>
 
               {/* Questions Review */}
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">Questions ({questions.length})</h3>
+              <div className="rounded-2xl border border-emerald-200/60 bg-emerald-100/60 p-6">
+                <h3 className="mb-4 text-xl font-semibold text-emerald-900">Questions ({questions.length})</h3>
                 {questions.map((question, index) => (
-                  <div key={index} className="bg-white rounded-lg p-4 mb-4 border">
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-medium text-gray-800">Question {index + 1}</h4>
+                  <div key={index} className="mb-4 rounded-lg border border-emerald-100/60 bg-white/85 p-4 shadow-sm">
+                    <div className="mb-2 flex items-start justify-between">
+                      <h4 className="font-medium text-emerald-900">Question {index + 1}</h4>
                       <div className="flex items-center space-x-2">
-                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+                        <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs text-emerald-700">
                           {question.questionType}
                         </span>
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                        <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs text-emerald-600">
                           {question.timeLimit}s
                         </span>
                       </div>
                     </div>
-                    <p className="text-gray-600 mb-3">{question.text}</p>
+                    <p className="mb-3 text-emerald-600">{question.text}</p>
                     {question.questionType === 'MCQ' && (
                       <div className="space-y-1">
                         {question.answers.map((answer, answerIndex) => (
-                          <div key={answerIndex} className={`text-sm p-2 rounded ${
-                            answer.is_correct ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                          }`}>
+                          <div
+                            key={answerIndex}
+                            className={`rounded p-2 text-sm ${
+                              answer.is_correct ? 'bg-emerald-100 text-emerald-700' : 'bg-white/70 text-emerald-600'
+                            }`}
+                          >
                             {String.fromCharCode(65 + answerIndex)}. {answer.text}
                             {answer.is_correct && ' ✓'}
                           </div>
@@ -824,13 +824,13 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                     )}
                     {question.questionType === 'True/False' && (
                       <div className="text-sm">
-                        <div className={`p-2 rounded ${
-                          question.answers[0]?.is_correct ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                        <div className={`rounded p-2 ${
+                          question.answers[0]?.is_correct ? 'bg-emerald-100 text-emerald-700' : 'bg-white/70 text-emerald-600'
                         }`}>
                           True {question.answers[0]?.is_correct && '✓'}
                         </div>
-                        <div className={`p-2 rounded ${
-                          question.answers[1]?.is_correct ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                        <div className={`mt-2 rounded p-2 ${
+                          question.answers[1]?.is_correct ? 'bg-emerald-100 text-emerald-700' : 'bg-white/70 text-emerald-600'
                         }`}>
                           False {question.answers[1]?.is_correct && '✓'}
                         </div>
@@ -838,9 +838,9 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                     )}
                     {question.questionType === 'Short Answer' && (
                       <div className="text-sm">
-                        <p className="text-gray-600">Acceptable answers:</p>
+                        <p className="text-emerald-600">Acceptable answers:</p>
                         {question.answers.map((answer, answerIndex) => (
-                          <div key={answerIndex} className="bg-gray-100 text-gray-600 p-2 rounded mt-1">
+                          <div key={answerIndex} className="mt-1 rounded bg-white/70 p-2 text-emerald-600">
                             {answer.text}
                           </div>
                         ))}
@@ -859,19 +859,21 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600 px-6 py-8">
+      <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-emerald-500/30 blur-3xl"></div>
+      <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-teal-400/25 blur-3xl"></div>
+      <div className="relative mx-auto max-w-6xl">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex justify-between items-center mb-8"
+          className="mb-8 flex items-center justify-between"
         >
           <div>
-            <h1 className="text-4xl font-bold text-white mb-2">
+            <h1 className="mb-2 text-4xl font-bold text-white">
               {isEditMode ? 'Edit Quiz' : 'Create Quiz'}
             </h1>
-            <p className="text-purple-200">
+            <p className="text-emerald-100">
               {isEditMode ? 'Update your quiz step by step' : 'Build your interactive quiz step by step'}
             </p>
           </div>
@@ -879,25 +881,25 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => onNavigate('dashboard')}
-            className="bg-white/20 text-white px-6 py-3 rounded-lg hover:bg-white/30 transition-colors"
+            className="rounded-full border border-emerald-300/60 bg-emerald-500/20 px-6 py-3 text-emerald-50 transition-colors hover:bg-emerald-500/30"
           >
             Back to Dashboard
           </motion.button>
         </motion.div>
 
         {/* Progress Steps */}
-        <div className="flex justify-center mb-8">
+        <div className="mb-8 flex justify-center">
           <div className="flex items-center space-x-4">
             {[1, 2, 3].map((step) => (
               <div key={step} className="flex items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
-                  currentStep >= step ? 'bg-purple-600' : 'bg-gray-300'
+                <div className={`flex h-10 w-10 items-center justify-center rounded-full font-bold text-emerald-950 ${
+                  currentStep >= step ? 'bg-emerald-400' : 'bg-emerald-200/70'
                 }`}>
                   {step}
                 </div>
                 {step < 3 && (
-                  <div className={`w-16 h-1 mx-2 ${
-                    currentStep > step ? 'bg-purple-600' : 'bg-gray-300'
+                  <div className={`mx-2 h-1 w-16 ${
+                    currentStep > step ? 'bg-emerald-400' : 'bg-emerald-200/60'
                   }`} />
                 )}
               </div>
@@ -909,13 +911,13 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
         {renderStepContent()}
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between mt-8">
+        <div className="mt-8 flex justify-between">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={prevStep}
             disabled={currentStep === 1}
-            className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-full bg-emerald-200 px-6 py-3 font-semibold text-emerald-800 transition-colors hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Previous
           </motion.button>
@@ -926,7 +928,7 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={nextStep}
-                className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+                className="rounded-full bg-emerald-500 px-6 py-3 font-semibold text-emerald-950 transition-colors hover:bg-emerald-400"
               >
                 Next
               </motion.button>
@@ -937,7 +939,7 @@ export default function QuizCreationPage({ onNavigate, editQuizData }) {
                 onClick={saveQuiz}
                 disabled={loading || questions.length === 0}
                 title={`Button state: loading=${loading}, questions=${questions.length}, disabled=${loading || questions.length === 0}`}
-                className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-full bg-emerald-500 px-6 py-3 font-semibold text-emerald-950 transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? 'Update Quiz' : 'Finish & Save Quiz')}
               </motion.button>

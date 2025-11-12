@@ -379,11 +379,11 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 border-4 border-white border-t-transparent rounded-full"
+          className="w-12 h-12 border-4 border-emerald-200 border-t-transparent rounded-full"
         />
       </div>
     )
@@ -391,20 +391,22 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600 p-6">
+        <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-emerald-500/30 blur-3xl"></div>
+        <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-teal-400/25 blur-3xl"></div>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-2xl p-8 shadow-xl text-center max-w-md"
+          className="relative mx-auto max-w-md rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-8 text-center text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
         >
-          <div className="text-6xl mb-4">❌</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Error</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <div className="mb-4 text-6xl">❌</div>
+          <h2 className="mb-4 text-2xl font-bold text-emerald-900">Error</h2>
+          <p className="mb-6 text-emerald-600">{error}</p>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => onNavigate('dashboard')}
-            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+            className="rounded-full bg-emerald-500 px-6 py-3 font-semibold text-emerald-950 transition-colors hover:bg-emerald-400"
           >
             Back to Dashboard
           </motion.button>
@@ -415,19 +417,21 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
 
   if (quizEnded) {
     return (
-      <div className="min-h-screen p-6">
-        <div className="max-w-4xl mx-auto">
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600 px-6 py-8">
+        <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-emerald-500/30 blur-3xl"></div>
+        <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-teal-400/25 blur-3xl"></div>
+        <div className="relative mx-auto max-w-4xl">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl p-8 shadow-xl text-center"
+            className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-10 text-center text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-2xl"
           >
-            <div className="text-6xl mb-6">🎉</div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">Quiz Completed!</h1>
-            <p className="text-gray-600 mb-6">Thank you for hosting the quiz session</p>
+            <div className="mb-6 text-6xl">🎉</div>
+            <h1 className="mb-4 text-3xl font-bold text-emerald-900">Quiz Completed!</h1>
+            <p className="mb-6 text-emerald-600">Thank you for hosting the quiz session</p>
             
-            <div className="bg-purple-50 rounded-lg p-6 mb-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Final Leaderboard</h3>
+            <div className="mb-6 rounded-2xl border border-emerald-200/60 bg-emerald-100/60 p-6">
+              <h3 className="mb-4 text-xl font-bold text-emerald-900">Final Leaderboard</h3>
               <div className="space-y-3">
                 {participants
                   .sort((a, b) => (b.score || 0) - (a.score || 0))
@@ -467,7 +471,7 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onNavigate('dashboard')}
-                className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+                className="rounded-full bg-emerald-500 px-6 py-3 font-semibold text-emerald-950 transition-colors hover:bg-emerald-400"
               >
                 Back to Dashboard
               </motion.button>
@@ -479,21 +483,23 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600 px-6 py-8">
+      <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-emerald-500/30 blur-3xl"></div>
+      <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-teal-400/25 blur-3xl"></div>
+      <div className="relative mx-auto max-w-6xl">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="mb-2 text-3xl font-bold text-white">
               {quiz?.title || 'Quiz Host Control'}
             </h1>
-            <p className="text-purple-200">Session Code: {sessionData.session ? sessionData.session.code : sessionData.code}</p>
+            <p className="text-emerald-100">Session Code: {sessionData.session ? sessionData.session.code : sessionData.code}</p>
           </div>
           <div className="text-right">
-            <div className="text-white text-sm">
+            <div className="text-sm text-white">
               Participants: {activeParticipants.length}
               {participants.length !== activeParticipants.length && (
-                <span className="ml-1 text-white/80 text-xs">
+                <span className="ml-1 text-xs text-white/80">
                   ({participants.length} total)
                 </span>
               )}
@@ -502,41 +508,46 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleEndSession}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm"
+              className="mt-3 rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600"
             >
               End Session
             </motion.button>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid gap-8 lg:grid-cols-3">
           {/* Quiz Control */}
           <div className="lg:col-span-2">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl p-6 shadow-xl"
+              className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-6 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
             >
               {!quizStarted ? (
-                <div className="text-center py-8">
-                  <div className="text-6xl mb-4">🎯</div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-4">Ready to Start?</h2>
-                  <p className="text-gray-600 mb-6">
+                <div className="py-8 text-center">
+                  <div className="mb-4 text-6xl">🎯</div>
+                  <h2 className="mb-2 text-2xl font-bold text-emerald-900">Ready to Start?</h2>
+                  <div className="mx-auto mb-4 inline-flex items-center rounded-full border border-emerald-200/60 bg-emerald-100/70 px-6 py-2 text-base font-semibold tracking-widest text-emerald-800 shadow-sm">
+                    Session Code:&nbsp;
+                    <span className="font-bold text-emerald-900">
+                      {sessionData.session ? sessionData.session.code : sessionData.code}
+                    </span>
+                  </div>
+                  <p className="mb-6 text-emerald-600">
                     {questions.length} questions ready • {activeParticipants.length} active participant
                     {activeParticipants.length === 1 ? '' : 's'}
                     {participants.length !== activeParticipants.length && (
-                      <span className="text-xs text-gray-500 ml-1">
+                      <span className="ml-1 text-xs text-emerald-500">
                         ({participants.length} total)
                       </span>
                     )}
                   </p>
-                  
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={startQuiz}
                     disabled={activeParticipants.length === 0}
-                    className="bg-green-600 text-white px-8 py-4 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+                    className="rounded-full bg-emerald-500 px-8 py-4 text-lg font-semibold text-emerald-950 transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {activeParticipants.length === 0 ? 'Waiting for Participants...' : 'Start Quiz'}
                   </motion.button>
@@ -544,19 +555,19 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
               ) : questionActive ? (
                 <div>
                   {/* Timer and Controls */}
-                  <div className="flex justify-between items-center mb-6">
-                    <div className="text-sm text-gray-600">
+                  <div className="mb-6 flex items-center justify-between">
+                    <div className="text-sm text-emerald-600">
                       Question {currentQuestionIndex + 1} of {questions.length}
                     </div>
                     <div className="flex items-center space-x-4">
-                      <div className={`text-2xl font-bold ${timeLeft <= 10 ? 'text-red-600' : 'text-purple-600'}`}>
+                      <div className={`text-2xl font-bold ${timeLeft <= 10 ? 'text-red-500' : 'text-emerald-600'}`}>
                         {timeLeft}s
                       </div>
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={nextQuestion}
-                        className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium"
+                        className="rounded-full bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600"
                       >
                         Skip Question
                       </motion.button>
@@ -565,14 +576,14 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
 
                   {/* Question */}
                   <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                    <h2 className="mb-4 text-2xl font-bold text-emerald-900">
                       {currentQuestion?.text}
                     </h2>
                     {currentQuestion?.image_url && (
                       <img
                         src={currentQuestion.image_url}
                         alt="Question"
-                        className="max-h-64 mx-auto rounded-lg shadow-lg"
+                        className="mx-auto max-h-64 rounded-lg shadow-lg"
                       />
                     )}
                   </div>
@@ -582,28 +593,27 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
                     {currentQuestion?.answers?.map((answer, index) => (
                       <div
                         key={answer.id}
-                        className="p-4 rounded-lg border-2 border-gray-200 bg-gray-50"
+                        className="rounded-lg border-2 border-emerald-100/60 bg-white/80 p-4"
                       >
                         <div className="flex items-center">
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold mr-4 bg-gray-400">
+                          <div className="mr-4 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-400 font-bold text-emerald-950">
                             {String.fromCharCode(65 + index)}
                           </div>
-                          <span className="text-gray-800">{answer.text}</span>
+                          <span className="text-emerald-900">{answer.text}</span>
                         </div>
                       </div>
                     ))}
                   </div>
 
                   <div className="mt-6 text-center">
-                  <p className="text-gray-600 mb-4">
+                    <p className="mb-4 text-emerald-600">
                       {responses.length} of {activeParticipants.length} participants answered
                     </p>
-                    
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={nextQuestion}
-                      className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium"
+                      className="rounded-full bg-orange-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600"
                     >
                       Skip Question
                     </motion.button>
@@ -611,10 +621,10 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
                 </div>
               ) : showResults ? (
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Question Results</h2>
+                  <h2 className="mb-6 text-2xl font-bold text-emerald-900">Question Results</h2>
                   
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                    <h3 className="mb-4 text-lg font-semibold text-emerald-800">
                       {currentQuestion?.text}
                     </h3>
                     
@@ -622,20 +632,20 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
                       {currentQuestion?.answers?.map((answer, index) => (
                         <div
                           key={answer.id}
-                          className={`p-4 rounded-lg border-2 ${
+                          className={`rounded-lg border-2 p-4 ${
                             answer.is_correct 
-                              ? 'border-green-500 bg-green-50' 
-                              : 'border-gray-200 bg-gray-50'
+                              ? 'border-emerald-300 bg-emerald-100/60' 
+                              : 'border-emerald-100/60 bg-white/80'
                           }`}
                         >
                           <div className="flex items-center">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold mr-4 ${
-                              answer.is_correct ? 'bg-green-500' : 'bg-gray-400'
+                            <div className={`mr-4 flex h-8 w-8 items-center justify-center rounded-full font-bold text-emerald-950 ${
+                              answer.is_correct ? 'bg-emerald-400' : 'bg-emerald-200'
                             }`}>
                               {String.fromCharCode(65 + index)}
                             </div>
-                            <span className="text-gray-800">{answer.text}</span>
-                            {answer.is_correct && <span className="ml-2 text-green-600 font-bold">✓</span>}
+                            <span className="text-emerald-900">{answer.text}</span>
+                            {answer.is_correct && <span className="ml-2 font-bold text-emerald-600">✓</span>}
                           </div>
                         </div>
                       ))}
@@ -643,16 +653,16 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
                   </div>
 
                   <div className="text-center">
-                    <div className="flex justify-center space-x-4 mb-4">
+                    <div className="mb-4 flex justify-center space-x-4">
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={nextQuestion}
                         disabled={responses.length < activeParticipants.length && activeParticipants.length > 0}
-                        className={`px-6 py-3 rounded-lg transition-colors ${
+                        className={`px-6 py-3 rounded-full transition-colors ${
                           responses.length >= activeParticipants.length && activeParticipants.length > 0
-                            ? 'bg-purple-600 text-white hover:bg-purple-700'
-                            : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                            ? 'bg-emerald-500 text-emerald-950 hover:bg-emerald-400'
+                            : 'bg-emerald-200 text-emerald-600 cursor-not-allowed'
                         }`}
                       >
                         {currentQuestionIndex >= questions.length - 1 ? 'Finish Quiz' : 'Next Question'}
@@ -662,17 +672,17 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={nextQuestion}
-                        className="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-colors"
+                        className="rounded-full bg-orange-500 px-6 py-3 text-white transition-colors hover:bg-orange-600"
                       >
                         {currentQuestionIndex >= questions.length - 1 ? 'Finish Quiz' : 'Skip to Next'}
                       </motion.button>
                     </div>
                     
                     {responses.length < activeParticipants.length && activeParticipants.length > 0 && (
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-emerald-600">
                         Waiting for {activeParticipants.length - responses.length} more participant(s) to answer
                         <br />
-                        <span className="text-orange-600 font-medium">Or use "Skip to Next" to continue</span>
+                        <span className="font-medium text-orange-500">Or use "Skip to Next" to continue</span>
                       </p>
                     )}
                   </div>
@@ -686,21 +696,21 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-white rounded-2xl p-6 shadow-xl"
+              className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-6 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
             >
-              <h3 className="text-xl font-bold text-gray-800 mb-4">
+              <h3 className="mb-4 text-xl font-bold text-emerald-900">
                 Participants ({activeParticipants.length})
                 {participants.length !== activeParticipants.length && (
-                  <span className="text-sm text-gray-500 ml-2">
+                  <span className="ml-2 text-sm text-emerald-500">
                     {participants.length - activeParticipants.length} left
                   </span>
                 )}
               </h3>
               
               {participants.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="text-4xl mb-2">👥</div>
-                  <p className="text-gray-600">No participants yet</p>
+                <div className="py-8 text-center">
+                  <div className="mb-2 text-4xl">👥</div>
+                  <p className="text-emerald-600">No participants yet</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -712,35 +722,35 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className={`flex items-center justify-between p-3 rounded-lg border ${
+                        className={`flex items-center justify-between rounded-lg border p-3 ${
                           participant?.is_active === false || participant?.left_at
-                            ? 'bg-gray-100 border-gray-200 opacity-70'
+                            ? 'border-emerald-100/60 bg-emerald-50/60 opacity-70'
                             : index === 0
-                              ? 'bg-yellow-50 border-yellow-200'
+                              ? 'border-yellow-200 bg-yellow-50'
                               : index === 1
-                                ? 'bg-gray-50 border-gray-200'
+                                ? 'border-emerald-100/60 bg-white/80'
                                 : index === 2
-                                  ? 'bg-orange-50 border-orange-200'
-                                  : 'bg-gray-50 border-gray-200'
+                                  ? 'border-orange-200 bg-orange-50'
+                                  : 'border-emerald-100/60 bg-white/80'
                         }`}
                       >
                         <div className="flex items-center">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold mr-3 ${
-                            index === 0 ? 'bg-yellow-500' :
-                            index === 1 ? 'bg-gray-400' :
-                            index === 2 ? 'bg-orange-500' :
-                            'bg-gray-300'
+                          <div className={`mr-3 flex h-8 w-8 items-center justify-center rounded-full font-bold text-emerald-950 ${
+                            index === 0 ? 'bg-yellow-400' :
+                            index === 1 ? 'bg-emerald-300' :
+                            index === 2 ? 'bg-orange-400' :
+                            'bg-emerald-200'
                           }`}>
                             {index + 1}
                           </div>
-                          <span className="font-medium text-gray-800">
+                          <span className="font-medium text-emerald-900">
                             {participant.nickname || 'Anonymous'}
                             {(participant?.is_active === false || participant?.left_at) && (
-                              <span className="ml-2 text-xs text-gray-500 uppercase tracking-wide">Left</span>
+                              <span className="ml-2 text-xs uppercase tracking-wide text-emerald-500">Left</span>
                             )}
                           </span>
                         </div>
-                        <div className="text-lg font-bold text-gray-800">
+                        <div className="text-lg font-bold text-emerald-900">
                           {participant.score || 0}
                         </div>
                       </motion.div>

@@ -255,31 +255,34 @@ export default function LoginPage({ onLogin }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600 px-4 py-10">
+      <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-emerald-500/30 blur-3xl"></div>
+      <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-teal-400/25 blur-3xl"></div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="relative mx-auto w-full max-w-md"
       >
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <div className="text-center mb-8">
+        <div className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/90 via-white/80 to-emerald-50/70 p-8 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-2xl">
+          <div className="mb-8 text-center">
             <motion.h1
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-3xl font-bold text-gray-800 mb-2"
+              className="mb-2 text-3xl font-bold text-emerald-900"
             >
-              Kahoot KZ
+              Zharqyn
             </motion.h1>
-            <p className="text-gray-600">Create and play interactive quizzes</p>
+            <p className="text-emerald-600">Create and play interactive quizzes</p>
           </div>
 
-          <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
+          <div className="mb-6 flex rounded-xl bg-emerald-100/60 p-1">
             <button
               onClick={() => handleModeSwitch(true)}
               className={`flex-1 py-2 px-4 rounded-md transition-all ${
-                isLogin ? 'bg-white shadow-sm text-purple-600' : 'text-gray-600'
+                isLogin ? 'bg-white text-emerald-600 shadow' : 'text-emerald-500'
               }`}
             >
               Login
@@ -287,7 +290,7 @@ export default function LoginPage({ onLogin }) {
             <button
               onClick={() => handleModeSwitch(false)}
               className={`flex-1 py-2 px-4 rounded-md transition-all ${
-                !isLogin ? 'bg-white shadow-sm text-purple-600' : 'text-gray-600'
+                !isLogin ? 'bg-white text-emerald-600 shadow' : 'text-emerald-500'
               }`}
             >
               Sign Up
@@ -298,7 +301,7 @@ export default function LoginPage({ onLogin }) {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4"
+              className="mb-4 rounded-lg border border-red-400/40 bg-red-500/15 px-4 py-3 text-red-100"
             >
               {error}
             </motion.div>
@@ -308,7 +311,7 @@ export default function LoginPage({ onLogin }) {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg mb-4"
+              className="mb-4 rounded-lg border border-emerald-300/40 bg-emerald-500/15 px-4 py-3 text-emerald-900"
             >
               {success}
             </motion.div>
@@ -317,47 +320,47 @@ export default function LoginPage({ onLogin }) {
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="mb-1 block text-sm font-medium text-emerald-800">
                   Display Name
                 </label>
                 <input
                   type="text"
                   value={formData.displayName}
                   onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full rounded-xl border border-emerald-200/60 bg-white/85 px-4 py-3 text-emerald-900 shadow-inner focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-200"
                   placeholder="Enter your display name"
                   required={!isLogin}
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="mt-1 text-xs text-emerald-600">
                   This is how your name will appear to other users
                 </p>
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="mb-1 block text-sm font-medium text-emerald-800">
                 Email
               </label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                  validationErrors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                className={`w-full rounded-xl border px-4 py-3 focus:outline-none focus:ring-4 focus:ring-emerald-200 ${
+                  validationErrors.email ? 'border-red-300 bg-red-50 text-red-700' : 'border-emerald-200/60 bg-white/85 text-emerald-900 shadow-inner'
                 }`}
                 placeholder="Enter your email"
                 required={isLogin}
               />
               {validationErrors.email && (
-                <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>
+                <p className="mt-1 text-sm text-red-500">{validationErrors.email}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="mb-1 block text-sm font-medium text-emerald-800">
                 Password
                 {!isLogin && (
-                  <span className="text-xs text-gray-500 ml-2">
+                  <span className="ml-2 text-xs text-emerald-600">
                     (8+ chars, uppercase, lowercase, number, special char)
                   </span>
                 )}
@@ -366,8 +369,8 @@ export default function LoginPage({ onLogin }) {
                 type="password"
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                  validationErrors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                className={`w-full rounded-xl border px-4 py-3 focus:outline-none focus:ring-4 focus:ring-emerald-200 ${
+                  validationErrors.password ? 'border-red-300 bg-red-50 text-red-700' : 'border-emerald-200/60 bg-white/85 text-emerald-900 shadow-inner'
                 }`}
                 placeholder="Enter your password"
                 required={isLogin}
@@ -375,13 +378,13 @@ export default function LoginPage({ onLogin }) {
               {validationErrors.password && (
                 <div className="mt-1">
                   {Array.isArray(validationErrors.password) ? (
-                    <ul className="text-red-500 text-sm list-disc list-inside">
+                    <ul className="list-inside list-disc text-sm text-red-500">
                       {validationErrors.password.map((error, index) => (
                         <li key={index}>{error}</li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-red-500 text-sm">{validationErrors.password}</p>
+                    <p className="text-sm text-red-500">{validationErrors.password}</p>
                   )}
                 </div>
               )}
@@ -389,21 +392,21 @@ export default function LoginPage({ onLogin }) {
 
             {!isLogin && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="mb-1 block text-sm font-medium text-emerald-800">
                   Confirm Password
                 </label>
                 <input
                   type="password"
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                    validationErrors.confirmPassword ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                  className={`w-full rounded-xl border px-4 py-3 focus:outline-none focus:ring-4 focus:ring-emerald-200 ${
+                    validationErrors.confirmPassword ? 'border-red-300 bg-red-50 text-red-700' : 'border-emerald-200/60 bg-white/85 text-emerald-900 shadow-inner'
                   }`}
                   placeholder="Confirm your password"
                   required={!isLogin}
                 />
                 {validationErrors.confirmPassword && (
-                  <p className="text-red-500 text-sm mt-1">{validationErrors.confirmPassword}</p>
+                  <p className="mt-1 text-sm text-red-500">{validationErrors.confirmPassword}</p>
                 )}
               </div>
             )}
@@ -413,7 +416,7 @@ export default function LoginPage({ onLogin }) {
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={loading || Object.keys(validationErrors).length > 0}
-              className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-full bg-emerald-500 py-3 px-4 text-lg font-semibold text-emerald-950 transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? 'Loading...' : (isLogin ? 'Login' : 'Sign Up')}
             </motion.button>
@@ -424,7 +427,7 @@ export default function LoginPage({ onLogin }) {
             <div className="mt-4 text-center">
               <button
                 onClick={() => setShowPasswordReset(true)}
-                className="text-sm text-purple-600 hover:text-purple-700 underline"
+                className="text-sm text-emerald-600 underline transition-colors hover:text-emerald-700"
               >
                 Forgot your password?
               </button>
@@ -436,25 +439,25 @@ export default function LoginPage({ onLogin }) {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-6 pt-4 border-t border-gray-200"
+              className="mt-6 border-t border-emerald-100/80 pt-4"
             >
-              <div className="text-center mb-4">
-                <h3 className="text-lg font-medium text-gray-800 mb-2">Reset Password</h3>
-                <p className="text-sm text-gray-600">
+              <div className="mb-4 text-center">
+                <h3 className="mb-2 text-lg font-medium text-emerald-900">Reset Password</h3>
+                <p className="text-sm text-emerald-600">
                   Enter your email address and we'll send you a link to reset your password.
                 </p>
               </div>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="mb-1 block text-sm font-medium text-emerald-800">
                     Email Address
                   </label>
                   <input
                     type="email"
                     value={passwordResetEmail}
                     onChange={(e) => setPasswordResetEmail(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full rounded-xl border border-emerald-200/60 bg-white/85 px-4 py-3 text-emerald-900 shadow-inner focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-200"
                     placeholder="Enter your email address"
                   />
                 </div>
@@ -465,7 +468,7 @@ export default function LoginPage({ onLogin }) {
                     whileTap={{ scale: 0.98 }}
                     onClick={handlePasswordReset}
                     disabled={loading}
-                    className="flex-1 bg-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 rounded-full bg-emerald-500 py-3 px-4 font-semibold text-emerald-950 transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {loading ? 'Sending...' : 'Send Reset Email'}
                   </motion.button>
@@ -479,7 +482,7 @@ export default function LoginPage({ onLogin }) {
                       setError('')
                       setSuccess('')
                     }}
-                    className="bg-gray-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-600 transition-colors"
+                    className="rounded-full bg-emerald-200 py-3 px-4 font-semibold text-emerald-800 transition-colors hover:bg-emerald-300"
                   >
                     Cancel
                   </motion.button>
@@ -491,10 +494,10 @@ export default function LoginPage({ onLogin }) {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
+                <div className="w-full border-t border-emerald-100/80" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue as guest</span>
+                <span className="bg-transparent px-2 text-emerald-600">Or continue as guest</span>
               </div>
             </div>
 
@@ -504,7 +507,7 @@ export default function LoginPage({ onLogin }) {
                 whileTap={{ scale: 0.98 }}
                 onClick={handleGuestLogin}
                 disabled={loading}
-                className="w-full bg-gray-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rounded-full bg-emerald-900/80 py-3 px-4 text-lg font-semibold text-white transition-colors hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? 'Loading...' : 'Continue as Guest'}
               </motion.button>
@@ -513,15 +516,15 @@ export default function LoginPage({ onLogin }) {
 
           {/* Resend Confirmation - Show only when email confirmation was sent */}
           {!isLogin && emailConfirmationSent && (
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <div className="text-center mb-3">
-                <p className="text-sm text-gray-600 mb-2">
+            <div className="mt-6 border-t border-emerald-100/80 pt-4">
+              <div className="mb-3 text-center">
+                <p className="mb-2 text-sm text-emerald-600">
                   Didn't receive the email?
                 </p>
                 <button
                   onClick={resendConfirmation}
                   disabled={loading}
-                  className="w-full bg-orange-500 text-white py-2 px-4 rounded-lg text-sm hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-full bg-emerald-500 py-2 px-4 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {loading ? 'Sending...' : 'Resend Confirmation Email'}
                 </button>
@@ -533,7 +536,7 @@ export default function LoginPage({ onLogin }) {
                     setSuccess('')
                     setError('')
                   }}
-                  className="text-sm text-gray-500 hover:text-gray-700 underline"
+                  className="text-sm text-emerald-600 underline transition-colors hover:text-emerald-800"
                 >
                   Back to Sign Up
                 </button>

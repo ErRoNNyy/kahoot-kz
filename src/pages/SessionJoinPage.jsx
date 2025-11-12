@@ -53,35 +53,35 @@ export default function SessionJoinPage({ onNavigate, onSessionJoined }) {
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen px-6 py-8">
+      <div className="mx-auto max-w-2xl">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
+          className="mb-8 text-center"
         >
-          <h1 className="text-4xl font-bold text-white mb-2">Join Quiz Session</h1>
-          <p className="text-purple-200">Enter the session code to participate</p>
+          <h1 className="mb-2 text-4xl font-bold text-white">Join Quiz Session</h1>
+          <p className="text-emerald-100">Enter the session code to participate</p>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white rounded-2xl p-8 shadow-xl"
+          className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-8 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
         >
-          <div className="text-center mb-8">
-            <div className="text-6xl mb-4">🎮</div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Ready to Play?</h2>
-            <p className="text-gray-600">Enter the session code provided by the host</p>
+          <div className="mb-8 text-center">
+            <div className="mb-4 text-6xl">🎮</div>
+            <h2 className="mb-2 text-2xl font-bold text-emerald-900">Ready to Play?</h2>
+            <p className="text-emerald-600">Enter the session code provided by the host</p>
           </div>
 
           {error && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6"
+              className="mb-6 rounded-lg border border-red-400/40 bg-red-500/15 px-4 py-3 text-red-100"
             >
               {error}
             </motion.div>
@@ -89,28 +89,28 @@ export default function SessionJoinPage({ onNavigate, onSessionJoined }) {
 
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-2 block text-sm font-medium text-emerald-800">
                 Session Code *
               </label>
               <input
                 type="text"
                 value={sessionCode}
                 onChange={(e) => setSessionCode(e.target.value.toUpperCase())}
-                className="w-full px-4 py-4 text-center text-2xl font-mono border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full rounded-xl border border-emerald-200/60 bg-white/80 px-4 py-4 text-center text-2xl font-mono text-emerald-900 shadow-inner focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-200"
                 placeholder="Enter session code"
                 maxLength="6"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-2 block text-sm font-medium text-emerald-800">
                 Your Nickname *
               </label>
               <input
                 type="text"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full rounded-xl border border-emerald-200/60 bg-white/80 px-4 py-3 text-emerald-900 shadow-inner focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-200"
                 placeholder="Enter your nickname"
               />
             </div>
@@ -120,19 +120,19 @@ export default function SessionJoinPage({ onNavigate, onSessionJoined }) {
               whileTap={{ scale: 0.98 }}
               onClick={joinSession}
               disabled={loading}
-              className="w-full bg-purple-600 text-white py-4 px-6 rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+              className="w-full rounded-full bg-emerald-500 py-4 px-6 text-lg font-semibold text-emerald-950 transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? 'Joining...' : 'Join Session'}
             </motion.button>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="mt-8 border-t border-emerald-100/80 pt-6">
             <div className="flex justify-center space-x-4">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onNavigate('dashboard')}
-                className="text-gray-600 hover:text-gray-800 transition-colors"
+                className="text-emerald-600 transition-colors hover:text-emerald-800"
               >
                 Back to Dashboard
               </motion.button>

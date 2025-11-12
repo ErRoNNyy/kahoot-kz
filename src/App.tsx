@@ -3,6 +3,7 @@ import { useAuth } from './hooks/useAuth'
 import { motion } from 'framer-motion'
 import { SessionService } from './services/session'
 import './App.css'
+import { AppHeader } from './components/AppHeader'
 
 // Import pages
 import LoginPage from './pages/LoginPage'
@@ -28,7 +29,7 @@ interface SessionData {
 }
 
 function App() {
-  const { user, loading } = useAuth()
+  const { user, loading, signOut } = useAuth()
   const [currentPage, setCurrentPage] = useState('login')
   const [sessionData, setSessionData] = useState<SessionData | null>(null)
   const [editQuizData, setEditQuizData] = useState<{ quizId: string } | null>(null)
@@ -106,6 +107,10 @@ function App() {
     setCurrentPage(page)
   }
 
+  const handleSignOut = async () => {
+    await signOut()
+  }
+
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
@@ -137,7 +142,8 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-800 via-emerald-600 to-teal-500">
+      <AppHeader user={user} onNavigate={handleNavigation} onSignOut={handleSignOut} />
       {renderPage()}
     </div>
   )
