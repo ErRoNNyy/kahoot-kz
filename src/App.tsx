@@ -33,6 +33,8 @@ function App() {
   const [currentPage, setCurrentPage] = useState('login')
   const [sessionData, setSessionData] = useState<SessionData | null>(null)
   const [editQuizData, setEditQuizData] = useState<{ quizId: string } | null>(null)
+  const [pendingGuestSessionCode, setPendingGuestSessionCode] = useState<string | null>(null)
+  const guestPages = React.useMemo(() => ['guest-welcome', 'guest-join', 'guest-waiting'], [])
 
   // Reset page to login when user becomes null (after sign out)
   React.useEffect(() => {
@@ -41,6 +43,13 @@ function App() {
       setCurrentPage('login')
     }
   }, [user, currentPage])
+
+  React.useEffect(() => {
+    if (user && (user as any).isGuest && !guestPages.includes(currentPage)) {
+      console.log('Detected guest user, routing to guest-welcome')
+      setCurrentPage('guest-welcome')
+    }
+  }, [user, currentPage, guestPages])
 
   // Clean up session on page unload
   React.useEffect(() => {
@@ -80,6 +89,13 @@ function App() {
   }
 
   const handleNavigation = (page: string, data: any = null) => {
+    if (page === 'guest-join') {
+      const incomingCode = data?.sessionCode ? String(data.sessionCode).toUpperCase() : null
+      setPendingGuestSessionCode(incomingCode)
+    } else if (page === 'guest-welcome') {
+      setPendingGuestSessionCode(null)
+    }
+
     // Clean up session data when navigating away from session pages (but not to quiz-related pages)
   if (currentPage === 'host-session' || currentPage === 'join-session' || currentPage === 'play-quiz' || currentPage === 'guest-waiting') {
       // Don't clear sessionData if navigating to quiz-related pages
@@ -129,21 +145,35 @@ function App() {
       case 'profile':
         return <ProfilePage onNavigate={setCurrentPage} />
       case 'guest-welcome':
-        return <GuestWelcomePage onNavigate={setCurrentPage} />
+        return <GuestWelcomePage onNavigate={handleNavigation} />
       case 'guest-join':
-        return <GuestJoinPage onNavigate={setCurrentPage} onSessionJoined={setSessionData} />
+        return (
+          <GuestJoinPage
+            sessionCode={pendingGuestSessionCode}
+            onNavigate={handleNavigation}
+            onSessionJoined={(joinedSession: SessionData) => {
+              setSessionData(joinedSession)
+              setPendingGuestSessionCode(null)
+            }}
+          />
+        )
       case 'guest-waiting':
         return <GuestWaitingPage sessionData={sessionData} onNavigate={setCurrentPage} />
       default:
         return user && (user as any).isGuest ? 
-          <GuestWelcomePage onNavigate={setCurrentPage} /> : 
+          <GuestWelcomePage onNavigate={handleNavigation} /> : 
           <DashboardPage onNavigate={setCurrentPage} />
     }
   }
 
+  const guestPagesWithoutHeader = new Set(guestPages)
+  const shouldHideHeader = guestPagesWithoutHeader.has(currentPage)
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-800 via-emerald-600 to-teal-500">
-      <AppHeader user={user} onNavigate={handleNavigation} onSignOut={handleSignOut} />
+      {!shouldHideHeader && (
+        <AppHeader user={user} onNavigate={handleNavigation} onSignOut={handleSignOut} />
+      )}
       {renderPage()}
     </div>
   )

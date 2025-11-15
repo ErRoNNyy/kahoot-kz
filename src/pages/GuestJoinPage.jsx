@@ -1,17 +1,91 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth.js'
 import { SessionService } from '../services/session.js'
+import bgSession from '../assets/bg_session.png'
 
-export default function GuestJoinPage({ onNavigate, onSessionJoined }) {
+export default function GuestJoinPage({ onNavigate, onSessionJoined, sessionCode }) {
   const { user } = useAuth()
-  const [sessionCode, setSessionCode] = useState('')
+
+  const storedGuest = useMemo(() => {
+    try {
+      const raw = localStorage.getItem('guest_user')
+      return raw ? JSON.parse(raw) : {}
+    } catch (err) {
+      console.warn('Failed to parse guest_user from localStorage:', err)
+      return {}
+    }
+  }, [])
+
+  const [nickname, setNickname] = useState(() => user?.nickname || storedGuest.nickname || '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [quizTitle, setQuizTitle] = useState('Quiz Room')
+  const [loadingTitle, setLoadingTitle] = useState(false)
+  const [titleError, setTitleError] = useState('')
+
+  useEffect(() => {
+    if (user?.nickname && !nickname) {
+      setNickname(user.nickname)
+    }
+  }, [user?.nickname, nickname])
+
+  const normalizedSessionCode = useMemo(() => {
+    return (sessionCode ? String(sessionCode) : '').trim().toUpperCase()
+  }, [sessionCode])
+
+  useEffect(() => {
+    if (!normalizedSessionCode) {
+      setQuizTitle('Quiz Room')
+      return
+    }
+
+    let isMounted = true
+    setLoadingTitle(true)
+    setTitleError('')
+
+    SessionService.validateSessionCode(normalizedSessionCode)
+      .then(({ data, error }) => {
+        if (!isMounted) return
+
+        if (error) {
+          console.error('Failed to validate session code:', error)
+          setTitleError('Unable to load quiz details')
+          return
+        }
+
+        setQuizTitle(data?.quizzes?.title || 'Quiz Room')
+      })
+      .catch((err) => {
+        if (!isMounted) return
+        console.error('Unexpected error validating session code:', err)
+        setTitleError('Unable to load quiz details')
+      })
+      .finally(() => {
+        if (!isMounted) return
+        setLoadingTitle(false)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [normalizedSessionCode])
 
   const joinSession = async () => {
-    if (!sessionCode.trim()) {
-      setError('Please enter a session code')
+    const trimmedNickname = nickname.trim()
+
+    if (!normalizedSessionCode) {
+      setError('Session code missing. Please go back and enter it again.')
+      return
+    }
+
+    if (!trimmedNickname) {
+      setError('Please enter your nickname')
+      return
+    }
+
+    if (!user?.id) {
+      setError('Unable to identify guest user. Please restart guest login.')
       return
     }
 
@@ -19,24 +93,39 @@ export default function GuestJoinPage({ onNavigate, onSessionJoined }) {
     setError('')
 
     try {
-      console.log('Guest joining session with:', { sessionCode: sessionCode.toUpperCase(), participantId: user.id, nickname: user.nickname })
-      
-      const { data, error } = await SessionService.joinSession(
-        sessionCode.toUpperCase(),
+      console.log('Guest joining session with:', {
+        sessionCode: normalizedSessionCode,
+        participantId: user.id,
+        nickname: trimmedNickname
+      })
+
+      const { data, error: joinError } = await SessionService.joinSession(
+        normalizedSessionCode,
         user.id,
-        user.nickname
+        trimmedNickname
       )
 
-      console.log('Guest join session result:', { data, error })
+      console.log('Guest join session result:', { data, joinError })
 
-      if (error) {
-        console.error('Guest join session error:', error)
-        setError(`Failed to join session: ${error.message}`)
-      } else {
-        console.log('Guest successfully joined session:', data)
-        onSessionJoined(data)
-        onNavigate('guest-waiting')
+      if (joinError) {
+        console.error('Guest join session error:', joinError)
+        setError(`Failed to join session: ${joinError.message}`)
+        return
       }
+
+      const updatedGuest = {
+        ...(storedGuest || {}),
+        ...user,
+        id: user.id,
+        isGuest: true,
+        nickname: trimmedNickname
+      }
+
+      localStorage.setItem('guest_user', JSON.stringify(updatedGuest))
+
+      console.log('Guest successfully joined session:', data)
+      onSessionJoined(data)
+      onNavigate('guest-waiting')
     } catch (err) {
       console.error('Guest join session failed:', err)
       setError(`Failed to join session: ${err.message}`)
@@ -46,93 +135,79 @@ export default function GuestJoinPage({ onNavigate, onSessionJoined }) {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600 px-6 py-8">
-      <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-emerald-500/30 blur-3xl"></div>
-      <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-teal-400/25 blur-3xl"></div>
+    <div className="relative min-h-screen">
+      <div className="absolute inset-0">
+        <img
+          src={bgSession}
+          alt="Quiz background"
+          className="h-full w-full object-cover"
+        />
+      </div>
+      <div className="absolute inset-0 bg-black/35" />
 
-      <div className="relative mx-auto max-w-2xl">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8 text-center"
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6">
+        <button
+          onClick={() => onNavigate('guest-welcome')}
+          className="absolute left-6 top-6 rounded-full bg-white/70 px-4 py-2 text-sm font-semibold text-[#EF7C1D] transition hover:bg-white"
         >
-          <h1 className="mb-2 text-4xl font-bold text-white">Join Quiz Room</h1>
-          <p className="text-emerald-100">Enter the room code to join the quiz session</p>
+          ← Change Code
+        </button>
+
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 text-center"
+        >
+          <h1 className="text-4xl font-black text-white drop-shadow-lg">
+            {loadingTitle ? 'Loading quiz…' : quizTitle}
+          </h1>
+          <p className="mt-2 text-sm font-semibold text-white/85 drop-shadow">
+            Session code: {normalizedSessionCode || '— — — — — —'}
+          </p>
+          {titleError && (
+            <p className="mt-2 text-sm text-red-200 drop-shadow">{titleError}</p>
+          )}
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-8 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
+          transition={{ delay: 0.1 }}
+          className="w-full max-w-md rounded-xl bg-white/90 px-8 py-8 text-center shadow-[0_25px_45px_-25px_rgba(0,0,0,0.6)] backdrop-blur-md"
         >
-          <div className="mb-8 text-center">
-            <div className="mb-4 text-6xl">🎮</div>
-            <h2 className="mb-2 text-2xl font-bold text-emerald-900">Ready to Play?</h2>
-            <p className="text-emerald-600">Enter the room code provided by the host</p>
-          </div>
-
           {error && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 rounded-lg border border-red-400/40 bg-red-500/15 px-4 py-3 text-red-100"
+              className="mb-4 rounded-lg bg-red-500/90 px-4 py-2 text-sm font-semibold text-white"
             >
               {error}
             </motion.div>
           )}
 
-          <div className="space-y-6">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-emerald-800">
-                Your Nickname *
-              </label>
-              <input
-                type="text"
-                value={sessionCode}
-                onChange={(e) => setSessionCode(e.target.value.toUpperCase())}
-                className="w-full rounded-xl border border-emerald-200/60 bg-white/85 px-4 py-4 text-center text-2xl font-mono text-emerald-900 shadow-inner focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-200"
-                placeholder="Enter room code"
-                maxLength="6"
-              />
-            </div>
+          <label className="mb-3 block text-sm font-semibold text-[#444]">
+            Nickname
+          </label>
+          <input
+            type="text"
+            value={nickname}
+            onChange={(e) => {
+              setNickname(e.target.value)
+              if (error) setError('')
+            }}
+            className="mb-5 w-full rounded-md border border-[#f5d2b0] bg-white px-4 py-3 text-lg font-medium text-[#EF7C1D] placeholder:text-[#f0bfa0] outline-none transition focus:border-[#EF7C1D] focus:ring-4 focus:ring-[#ef7c1d33]"
+            placeholder="Your nickname"
+          />
 
-            <div className="rounded-2xl border border-emerald-100/80 bg-white/80 p-4 shadow-inner">
-              <div className="flex items-center space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-600">
-                  👤
-                </div>
-                <div>
-                  <p className="text-sm text-emerald-600">Joining as:</p>
-                  <p className="font-semibold text-emerald-900">{user?.nickname || 'Guest'}</p>
-                </div>
-              </div>
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={joinSession}
-              disabled={loading}
-              className="w-full rounded-full bg-emerald-500 py-4 px-6 text-lg font-semibold text-emerald-950 transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {loading ? 'Joining...' : 'Join Room'}
-            </motion.button>
-          </div>
-
-          <div className="mt-8 border-t border-emerald-100/80 pt-6">
-            <div className="flex justify-center space-x-4">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => onNavigate('guest-welcome')}
-                className="text-emerald-600 transition-colors hover:text-emerald-800"
-              >
-                ← Back to Welcome
-              </motion.button>
-            </div>
-          </div>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={joinSession}
+            disabled={loading || !normalizedSessionCode}
+            className="w-full rounded-md bg-[#FF8A24] py-3 text-lg font-bold text-white transition hover:bg-[#ff9e4b] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? 'Joining...' : 'Enter'}
+          </motion.button>
         </motion.div>
       </div>
     </div>

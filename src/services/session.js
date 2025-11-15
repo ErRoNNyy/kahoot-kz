@@ -26,17 +26,49 @@ export class SessionService {
     return { data, error }
   }
 
-  // Join a session
-  static async joinSession(sessionCode, participantId, nickname) {
-    console.log('SessionService.joinSession called with:', { sessionCode, participantId, nickname })
-    
-    // First, get the session
-    const { data: session, error: sessionError } = await supabase
+  // Validate session code before joining
+  static async validateSessionCode(sessionCode) {
+    const normalizedCode = (sessionCode || '').trim().toUpperCase()
+    console.log('SessionService.validateSessionCode called with:', normalizedCode)
+
+    if (!normalizedCode) {
+      const error = { message: 'Session code is required' }
+      console.error('SessionService.validateSessionCode error:', error)
+      return { data: null, error }
+    }
+
+    const { data, error } = await supabase
       .from('sessions')
-      .select('*')
-      .eq('code', sessionCode)
+      .select(`
+        *,
+        quizzes (
+          id,
+          title,
+          description
+        )
+      `)
+      .eq('code', normalizedCode)
       .eq('status', 'active')
       .single()
+
+    if (error) {
+      console.error('SessionService.validateSessionCode failed:', error)
+    } else {
+      console.log('SessionService.validateSessionCode success:', data?.id)
+    }
+
+    return { data, error }
+  }
+
+  // Join a session
+  static async joinSession(sessionCode, participantId, nickname) {
+    const normalizedCode = (sessionCode || '').trim().toUpperCase()
+    const trimmedNickname = nickname?.trim?.() || ''
+
+    console.log('SessionService.joinSession called with:', { sessionCode: normalizedCode, participantId, nickname: trimmedNickname })
+
+    // First, validate the session code
+    const { data: session, error: sessionError } = await this.validateSessionCode(normalizedCode)
 
     console.log('Session lookup result:', { session, sessionError })
 
@@ -58,7 +90,7 @@ export class SessionService {
     // Prepare participant data based on user type
     const participantData = {
       session_id: session.id,
-      nickname,
+      nickname: trimmedNickname,
       score: 0,
       is_active: true,
       left_at: null

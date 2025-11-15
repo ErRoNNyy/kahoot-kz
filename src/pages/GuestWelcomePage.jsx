@@ -1,171 +1,111 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth.js'
+import { SessionService } from '../services/session.js'
 
 export default function GuestWelcomePage({ onNavigate }) {
   const { user, signOut } = useAuth()
-  const [nickname, setNickname] = useState('')
+  const [sessionCode, setSessionCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleJoinRoom = () => {
-    if (!nickname.trim()) {
-      setError('Please enter a nickname')
+  const handleContinue = async () => {
+    const trimmedCode = sessionCode.trim().toUpperCase()
+
+    if (!trimmedCode) {
+      setError('Please enter a session code')
       return
     }
 
-    // Update guest user with nickname if needed
-    if (user?.nickname !== nickname) {
-      const updatedUser = { ...user, nickname }
-      localStorage.setItem('guest_user', JSON.stringify(updatedUser))
-    }
+    setLoading(true)
+    setError('')
 
-    onNavigate('guest-join')
+    try {
+      const { data, error: sessionError } = await SessionService.validateSessionCode(trimmedCode)
+
+      if (sessionError || !data) {
+        console.error('Failed to validate session code:', sessionError)
+        setError(sessionError?.message || 'Session not found or not active')
+        return
+      }
+
+      onNavigate('guest-join', { sessionCode: trimmedCode })
+    } catch (err) {
+      console.error('Unexpected error validating session code:', err)
+      setError(err.message || 'Unable to validate session code right now')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleSignOut = async () => {
     console.log('Guest signing out...')
     await signOut()
     console.log('Guest sign out completed, navigating to login')
-    // Force a page reload to clear any cached state
     window.location.href = '/'
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600 px-6 py-8">
-      <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-emerald-500/30 blur-3xl"></div>
-      <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-teal-400/25 blur-3xl"></div>
-
-      <div className="relative mx-auto max-w-4xl">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8 flex items-center justify-between"
+    <div className="flex min-h-screen flex-col bg-[#1FB6C4] text-white">
+      <div className="flex justify-end p-6">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleSignOut}
+          className="rounded-full bg-white/10 px-5 py-2 text-sm font-medium text-white transition hover:bg-white/20"
         >
-          <div>
-            <h1 className="mb-2 text-4xl font-bold text-white">
-              Welcome, {user?.nickname || 'Guest'}!
-            </h1>
-            <p className="text-emerald-100">Join a quiz session as a guest</p>
-          </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleSignOut}
-            className="rounded-full border border-emerald-300/60 bg-emerald-500/20 px-6 py-3 text-emerald-50 transition-colors hover:bg-emerald-500/30"
-          >
-            Sign Out
-          </motion.button>
+          Sign out
+        </motion.button>
+      </div>
+
+      <div className="flex flex-1 flex-col items-center justify-center px-6">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-10 text-center"
+        >
+          <h1 className="text-4xl font-black tracking-[0.2em] uppercase">Aqyldy Quiz!</h1>
+          
         </motion.div>
 
-        {/* Main Content */}
-        <div className="grid gap-8 md:grid-cols-2">
-          {/* Join Room Card */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-8 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="w-full max-w-sm space-y-4 text-center"
+        >
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-md bg-red-500/85 px-4 py-3 text-sm font-medium text-white"
+            >
+              {error}
+            </motion.div>
+          )}
+
+          <input
+            type="text"
+            value={sessionCode}
+            onChange={(e) => {
+              setSessionCode(e.target.value.toUpperCase())
+              if (error) setError('')
+            }}
+            className="w-full rounded-md border border-white/20 bg-white px-4 py-3 text-center text-lg font-semibold text-[#1FB6C4] outline-none transition focus:border-white focus:ring-4 focus:ring-white/40"
+            placeholder="Game code"
+            maxLength="6"
+          />
+
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={handleContinue}
+            disabled={loading}
+            className="w-full rounded-md bg-[#FF8A24] py-3 text-lg font-semibold text-white transition hover:bg-[#ff9e4b] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <div className="mb-6 text-center">
-              <div className="mb-4 text-6xl">🎮</div>
-              <h2 className="mb-2 text-2xl font-bold text-emerald-900">Join Quiz Room</h2>
-              <p className="text-emerald-600">Enter a room code to join a quiz session</p>
-            </div>
-
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-6 rounded-lg border border-red-400/40 bg-red-500/15 px-4 py-3 text-red-100"
-              >
-                {error}
-              </motion.div>
-            )}
-
-            <div className="space-y-4">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-emerald-800">
-                  Your nickname
-                </label>
-                <input
-                  type="text"
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                  className="w-full rounded-xl border border-emerald-200/60 bg-white/85 px-4 py-3 text-emerald-900 shadow-inner focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-200"
-                  placeholder="Enter your nickname"
-                  defaultValue={user?.nickname || ''}
-                />
-              </div>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleJoinRoom}
-                disabled={loading}
-                className="w-full rounded-full bg-emerald-500 py-4 px-6 text-lg font-semibold text-emerald-950 transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {loading ? 'Loading...' : 'Join Room'}
-              </motion.button>
-            </div>
-          </motion.div>
-
-          {/* Info Card */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-8 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
-          >
-            <div className="mb-6 text-center">
-              <div className="mb-4 text-6xl">👥</div>
-              <h2 className="mb-2 text-2xl font-bold text-emerald-900">How It Works</h2>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-600">
-                  1
-                </div>
-                <div>
-                  <h3 className="font-semibold text-emerald-900">Get Room Code</h3>
-                  <p className="text-sm text-emerald-600">Ask the host for the 6-character room code</p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-600">
-                  2
-                </div>
-                <div>
-                  <h3 className="font-semibold text-emerald-900">Enter Code</h3>
-                  <p className="text-sm text-emerald-600">Type the room code to join the session</p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-600">
-                  3
-                </div>
-                <div>
-                  <h3 className="font-semibold text-emerald-900">Wait for Start</h3>
-                  <p className="text-sm text-emerald-600">See other participants and wait for host to begin</p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-600">
-                  4
-                </div>
-                <div>
-                  <h3 className="font-semibold text-emerald-900">Play Quiz</h3>
-                  <p className="text-sm text-emerald-600">Answer questions and compete with others!</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+            {loading ? 'Checking...' : 'Enter'}
+          </motion.button>
+        </motion.div>
       </div>
     </div>
   )
