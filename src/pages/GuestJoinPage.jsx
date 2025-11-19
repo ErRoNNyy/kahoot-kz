@@ -18,6 +18,7 @@ export default function GuestJoinPage({ onNavigate, onSessionJoined, sessionCode
   }, [])
 
   const [nickname, setNickname] = useState(() => user?.nickname || storedGuest.nickname || '')
+  const [nicknameTouched, setNicknameTouched] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [quizTitle, setQuizTitle] = useState('Quiz Room')
@@ -25,10 +26,10 @@ export default function GuestJoinPage({ onNavigate, onSessionJoined, sessionCode
   const [titleError, setTitleError] = useState('')
 
   useEffect(() => {
-    if (user?.nickname && !nickname) {
+    if (user?.nickname && !nicknameTouched && !nickname) {
       setNickname(user.nickname)
     }
-  }, [user?.nickname, nickname])
+  }, [user?.nickname, nickname, nicknameTouched])
 
   const normalizedSessionCode = useMemo(() => {
     return (sessionCode ? String(sessionCode) : '').trim().toUpperCase()
@@ -193,6 +194,9 @@ export default function GuestJoinPage({ onNavigate, onSessionJoined, sessionCode
             value={nickname}
             onChange={(e) => {
               setNickname(e.target.value)
+              if (!nicknameTouched) {
+                setNicknameTouched(true)
+              }
               if (error) setError('')
             }}
             className="mb-5 w-full rounded-md border border-[#f5d2b0] bg-white px-4 py-3 text-lg font-medium text-[#EF7C1D] placeholder:text-[#f0bfa0] outline-none transition focus:border-[#EF7C1D] focus:ring-4 focus:ring-[#ef7c1d33]"

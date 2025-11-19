@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth.js'
 import { QuizService } from '../services/quiz.js'
@@ -21,6 +21,7 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
   const [questionActive, setQuestionActive] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [quizEnded, setQuizEnded] = useState(false)
+  const autoStartTriggeredRef = useRef(false)
 
   const sessionId = sessionData?.session ? sessionData.session.id : sessionData?.id
 
@@ -194,7 +195,7 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
     }
   }, [sessionId, currentQuestion?.id, loadResponses])
 
-  const startQuiz = async () => {
+  const startQuiz = useCallback(async () => {
     if (!questions.length) {
       setError('No questions available')
       return
@@ -225,6 +226,8 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
       setTimeLeft(questions[0].time_limit || 30)
       setQuestionActive(true)
       setShowResults(false)
+      setAutoStarting(false)
+      setCountdown(5)
       
       console.log('Session updated successfully - guests should be notified')
       
@@ -235,8 +238,27 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
     } catch (err) {
       console.error('Error starting quiz:', err)
       setError('Failed to start quiz')
+      setAutoStarting(false)
+      setCountdown(5)
     }
-  }
+  }, [questions, sessionId, loadResponses])
+
+  useEffect(() => {
+    const shouldAutoStart =
+      sessionData?.autoStart || (sessionData?.session && !quizStarted)
+
+    if (
+      shouldAutoStart &&
+      !autoStartTriggeredRef.current &&
+      questions.length > 0 &&
+      !quizStarted &&
+      !loading
+    ) {
+      autoStartTriggeredRef.current = true
+      autoStartTriggeredRef.current = true
+      startQuiz()
+    }
+  }, [sessionData?.autoStart, sessionData?.session, questions.length, quizStarted, loading, startQuiz])
 
   const nextQuestion = async () => {
     if (currentQuestionIndex >= questions.length - 1) {
@@ -524,33 +546,18 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
               className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-6 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
             >
               {!quizStarted ? (
-                <div className="py-8 text-center">
-                  <div className="mb-4 text-6xl">🎯</div>
-                  <h2 className="mb-2 text-2xl font-bold text-emerald-900">Ready to Start?</h2>
-                  <div className="mx-auto mb-4 inline-flex items-center rounded-full border border-emerald-200/60 bg-emerald-100/70 px-6 py-2 text-base font-semibold tracking-widest text-emerald-800 shadow-sm">
-                    Session Code:&nbsp;
-                    <span className="font-bold text-emerald-900">
-                      {sessionData.session ? sessionData.session.code : sessionData.code}
-                    </span>
+                <div className="py-16 text-center">
+                  <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-full border-4 border-emerald-400 text-emerald-500">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                      className="h-16 w-16 border-4 border-emerald-300 border-t-transparent rounded-full"
+                    />
                   </div>
-                  <p className="mb-6 text-emerald-600">
-                    {questions.length} questions ready • {activeParticipants.length} active participant
-                    {activeParticipants.length === 1 ? '' : 's'}
-                    {participants.length !== activeParticipants.length && (
-                      <span className="ml-1 text-xs text-emerald-500">
-                        ({participants.length} total)
-                      </span>
-                    )}
+                  <h2 className="text-2xl font-bold text-emerald-900">Starting quiz…</h2>
+                  <p className="mt-2 text-emerald-600">
+                    Session code {sessionData.session ? sessionData.session.code : sessionData.code}
                   </p>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={startQuiz}
-                    disabled={activeParticipants.length === 0}
-                    className="rounded-full bg-emerald-500 px-8 py-4 text-lg font-semibold text-emerald-950 transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {activeParticipants.length === 0 ? 'Waiting for Participants...' : 'Start Quiz'}
-                  </motion.button>
                 </div>
               ) : questionActive ? (
                 <div>

@@ -34,7 +34,7 @@ function App() {
   const [sessionData, setSessionData] = useState<SessionData | null>(null)
   const [editQuizData, setEditQuizData] = useState<{ quizId: string } | null>(null)
   const [pendingGuestSessionCode, setPendingGuestSessionCode] = useState<string | null>(null)
-  const guestPages = React.useMemo(() => ['guest-welcome', 'guest-join', 'guest-waiting'], [])
+  const guestPages = React.useMemo(() => ['guest-welcome', 'guest-join', 'guest-waiting', 'play-quiz'], [])
 
   // Reset page to login when user becomes null (after sign out)
   React.useEffect(() => {
@@ -138,7 +138,7 @@ function App() {
       case 'join-session':
         return <SessionJoinPage onNavigate={setCurrentPage} onSessionJoined={setSessionData} />
       case 'play-quiz':
-        return <QuizPlayPage sessionData={sessionData} onNavigate={setCurrentPage} />
+        return <QuizPlayPage sessionData={sessionData} onNavigate={handleNavigation} />
       case 'quiz-host-control':
         console.log('App.tsx: Rendering QuizHostControlPage with sessionData:', sessionData)
         return <QuizHostControlPage sessionData={sessionData} onNavigate={setCurrentPage} />
@@ -158,7 +158,7 @@ function App() {
           />
         )
       case 'guest-waiting':
-        return <GuestWaitingPage sessionData={sessionData} onNavigate={setCurrentPage} />
+        return <GuestWaitingPage sessionData={sessionData} onNavigate={handleNavigation} />
       default:
         return user && (user as any).isGuest ? 
           <GuestWelcomePage onNavigate={handleNavigation} /> : 

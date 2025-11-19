@@ -152,6 +152,44 @@ export class SessionService {
     }
   }
 
+  // Update participant properties (e.g. avatar selection, nickname)
+  static async updateParticipant(sessionId, participantId, updates = {}) {
+    console.log('SessionService.updateParticipant called with:', {
+      sessionId,
+      participantId,
+      updates
+    })
+
+    if (!sessionId || !participantId) {
+      const error = { message: 'Missing session or participant information' }
+      console.error('SessionService.updateParticipant validation error:', error)
+      return { data: null, error }
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('session_participants')
+        .update({
+          ...updates
+        })
+        .eq('session_id', sessionId)
+        .eq('id', participantId)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('SessionService.updateParticipant failed:', error)
+        return { data: null, error }
+      }
+
+      console.log('SessionService.updateParticipant succeeded:', data)
+      return { data, error: null }
+    } catch (err) {
+      console.error('SessionService.updateParticipant encountered an exception:', err)
+      return { data: null, error: err }
+    }
+  }
+
   // Get session details
   static async getSession(sessionId) {
     const { data, error } = await supabase
@@ -285,13 +323,13 @@ export class SessionService {
   static subscribeToSession(sessionId, callback) {
     return supabase
       .channel(`session-${sessionId}`)
-      .on('postgres_changes', 
-        { 
-          event: 'UPDATE', 
-          schema: 'public', 
+      .on('postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
           table: 'sessions',
           filter: `id=eq.${sessionId}`
-        }, 
+        },
         callback
       )
       .subscribe()
