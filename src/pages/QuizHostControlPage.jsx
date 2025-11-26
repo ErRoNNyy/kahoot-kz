@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth.js'
 import { QuizService } from '../services/quiz.js'
 import { SessionService } from '../services/session.js'
 import { ResponsesService } from '../services/responses.js'
+import bgSession from '../assets/bg_session.png'
 
 export default function QuizHostControlPage({ sessionData, onNavigate }) {
   const { user } = useAuth()
@@ -22,6 +23,10 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
   const [showResults, setShowResults] = useState(false)
   const [quizEnded, setQuizEnded] = useState(false)
   const autoStartTriggeredRef = useRef(false)
+  
+  // Countdown states for quiz starting animation
+  const [showCountdown, setShowCountdown] = useState(false)
+  const [countdownValue, setCountdownValue] = useState(5)
 
   const sessionId = sessionData?.session ? sessionData.session.id : sessionData?.id
 
@@ -195,7 +200,8 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
     }
   }, [sessionId, currentQuestion?.id, loadResponses])
 
-  const startQuiz = useCallback(async () => {
+  // Function to actually start the quiz (called after countdown finishes)
+  const actuallyStartQuiz = useCallback(async () => {
     if (!questions.length) {
       setError('No questions available')
       return
@@ -207,7 +213,7 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
     }
 
     try {
-      console.log('Starting quiz...')
+      console.log('Actually starting quiz after countdown...')
       
       // Update session with first question FIRST to notify guests
       console.log('Host updating session with first question:', questions[0].id)
@@ -221,13 +227,12 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
       
       // Update local state after successful database update
       setQuizStarted(true)
+      setShowCountdown(false)
       setCurrentQuestionIndex(0)
       setCurrentQuestion(questions[0])
       setTimeLeft(questions[0].time_limit || 30)
       setQuestionActive(true)
       setShowResults(false)
-      setAutoStarting(false)
-      setCountdown(5)
       
       console.log('Session updated successfully - guests should be notified')
       
@@ -238,27 +243,51 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
     } catch (err) {
       console.error('Error starting quiz:', err)
       setError('Failed to start quiz')
-      setAutoStarting(false)
-      setCountdown(5)
+      setShowCountdown(false)
     }
   }, [questions, sessionId, loadResponses])
 
-  useEffect(() => {
-    const shouldAutoStart =
-      sessionData?.autoStart || (sessionData?.session && !quizStarted)
+  // Function to trigger the countdown animation
+  const startQuiz = useCallback(() => {
+    if (!questions.length) {
+      setError('No questions available')
+      return
+    }
+    console.log('Starting countdown animation...')
+    setCountdownValue(5)
+    setShowCountdown(true)
+  }, [questions])
 
+  // Countdown timer effect
+  useEffect(() => {
+    if (!showCountdown) return
+    
+    if (countdownValue <= 0) {
+      // Countdown finished, actually start the quiz
+      actuallyStartQuiz()
+      return
+    }
+    
+    const timer = setTimeout(() => {
+      setCountdownValue(prev => prev - 1)
+    }, 1000)
+    
+    return () => clearTimeout(timer)
+  }, [showCountdown, countdownValue, actuallyStartQuiz])
+
+  // Auto-start only if explicitly requested via sessionData.autoStart
+  useEffect(() => {
     if (
-      shouldAutoStart &&
+      sessionData?.autoStart &&
       !autoStartTriggeredRef.current &&
       questions.length > 0 &&
       !quizStarted &&
       !loading
     ) {
       autoStartTriggeredRef.current = true
-      autoStartTriggeredRef.current = true
       startQuiz()
     }
-  }, [sessionData?.autoStart, sessionData?.session, questions.length, quizStarted, loading, startQuiz])
+  }, [sessionData?.autoStart, questions.length, quizStarted, loading, startQuiz])
 
   const nextQuestion = async () => {
     if (currentQuestionIndex >= questions.length - 1) {
@@ -505,61 +534,156 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600 px-6 py-8">
-      <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-emerald-500/30 blur-3xl"></div>
-      <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-teal-400/25 blur-3xl"></div>
-      <div className="relative mx-auto max-w-6xl">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="mb-2 text-3xl font-bold text-white">
-              {quiz?.title || 'Quiz Host Control'}
-            </h1>
-            <p className="text-emerald-100">Session Code: {sessionData.session ? sessionData.session.code : sessionData.code}</p>
-          </div>
-          <div className="text-right">
-            <div className="text-sm text-white">
-              Participants: {activeParticipants.length}
-              {participants.length !== activeParticipants.length && (
-                <span className="ml-1 text-xs text-white/80">
-                  ({participants.length} total)
-                </span>
-              )}
+    <div
+      className="relative min-h-screen overflow-hidden bg-cover bg-center"
+      style={{ backgroundImage: `url(${bgSession})` }}
+    >
+      <div className="relative px-6 py-8">
+        <div className="relative mx-auto max-w-6xl">
+          {/* Header */}
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+              <h1 className="mb-2 text-3xl font-bold text-white drop-shadow-lg">
+                {quiz?.title || 'Quiz Host Control'}
+              </h1>
+              <p className="text-white/90 drop-shadow">Session Code: {sessionData.session ? sessionData.session.code : sessionData.code}</p>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleEndSession}
-              className="mt-3 rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600"
-            >
-              End Session
-            </motion.button>
+            <div className="text-right">
+              <div className="text-sm text-white drop-shadow">
+                Participants: {activeParticipants.length}
+                {participants.length !== activeParticipants.length && (
+                  <span className="ml-1 text-xs text-white/80">
+                    ({participants.length} total)
+                  </span>
+                )}
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleEndSession}
+                className="mt-3 rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600"
+              >
+                End Session
+              </motion.button>
+            </div>
           </div>
-        </div>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Quiz Control */}
-          <div className="lg:col-span-2">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-6 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
-            >
-              {!quizStarted ? (
-                <div className="py-16 text-center">
-                  <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-full border-4 border-emerald-400 text-emerald-500">
+          <div className="grid gap-8 lg:grid-cols-3">
+            {/* Quiz Control */}
+            <div className="lg:col-span-2">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-6 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
+              >
+                {!quizStarted ? (
+                  <div className="relative py-6">
+                    {/* Quiz Title Banner - Top Center */}
+                    <div className="flex justify-center mb-6">
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="relative"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-200 rounded-full blur-sm"></div>
+                        <div className="relative rounded-full bg-gradient-to-r from-amber-100 via-yellow-50 to-amber-100 border-2 border-amber-300/60 px-8 py-2.5 shadow-lg">
+                          <h1 
+                            className="text-xl font-bold text-[#2a1940] tracking-wide"
+                            style={{ fontFamily: "'Pacifico', 'Brush Script MT', cursive", fontStyle: 'italic' }}
+                          >
+                            {quiz?.title || 'Quiz'}
+                          </h1>
+                        </div>
+                      </motion.div>
+                    </div>
+
+                    {/* Question Number Badge - Absolute Top Right */}
                     <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                      className="h-16 w-16 border-4 border-emerald-300 border-t-transparent rounded-full"
-                    />
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="absolute -top-2 -right-2 z-10"
+                    >
+                      <div className="rounded-lg bg-yellow-300 px-4 py-1.5 shadow-md border border-yellow-400/50">
+                        <span className="text-sm font-bold text-[#2a1940]">1 of {questions.length}</span>
+                      </div>
+                    </motion.div>
+
+                    {/* Question Card */}
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.15 }}
+                      className="relative mx-auto max-w-lg"
+                    >
+                      <div className="rounded-xl bg-white/95 px-6 py-8 text-center shadow-xl backdrop-blur-sm border border-white/50">
+                        <h2 className="text-xl font-bold leading-relaxed text-[#2a1940] md:text-2xl">
+                          {questions[0]?.text || 'Get ready for the first question!'}
+                        </h2>
+                        {questions[0]?.image_url && (
+                          <img
+                            src={questions[0].image_url}
+                            alt="Question"
+                            className="mx-auto mt-5 max-h-40 rounded-lg object-cover shadow-md"
+                          />
+                        )}
+                      </div>
+
+                      {/* Countdown Pill or Start Button - Below Question Card */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="flex flex-col items-center mt-4 gap-3"
+                      >
+                        <AnimatePresence mode="wait">
+                          {showCountdown ? (
+                            <motion.div
+                              key={countdownValue}
+                              initial={{ scale: 0.8, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 1.1, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="rounded-full bg-yellow-300 px-5 py-1.5 shadow-md border border-yellow-400/50"
+                            >
+                              <span className="text-sm font-semibold text-[#2a1940]">
+                                {countdownValue} sec left..
+                              </span>
+                            </motion.div>
+                          ) : (
+                            <motion.button
+                              key="start-button"
+                              initial={{ scale: 0.9, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0.9, opacity: 0 }}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={startQuiz}
+                              className="rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-8 py-3 text-lg font-bold text-white shadow-lg hover:from-emerald-400 hover:to-teal-400 transition-all duration-200 border-2 border-emerald-400/50"
+                            >
+                              🚀 Start Quiz
+                            </motion.button>
+                          )}
+                        </AnimatePresence>
+                        
+                        {/* Waiting message when not started */}
+                        {!showCountdown && (
+                          <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-sm text-emerald-600/80"
+                          >
+                            Click to begin the countdown
+                          </motion.p>
+                        )}
+                      </motion.div>
+                    </motion.div>
+
+                    {/* Session Code - Small text at bottom */}
+                    <p className="mt-6 text-center text-sm text-emerald-600/80">
+                      Session code: {sessionData.session ? sessionData.session.code : sessionData.code}
+                    </p>
                   </div>
-                  <h2 className="text-2xl font-bold text-emerald-900">Starting quiz…</h2>
-                  <p className="mt-2 text-emerald-600">
-                    Session code {sessionData.session ? sessionData.session.code : sessionData.code}
-                  </p>
-                </div>
-              ) : questionActive ? (
+                ) : questionActive ? (
                 <div>
                   {/* Timer and Controls */}
                   <div className="mb-6 flex items-center justify-between">
@@ -768,6 +892,7 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
           </div>
         </div>
       </div>
+    </div>
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { useAuth } from './hooks/useAuth'
 import { motion } from 'framer-motion'
 import { SessionService } from './services/session'
 import './App.css'
+// @ts-ignore - Header component kept for future use
 import { AppHeader } from './components/AppHeader'
 
 // Import pages
@@ -166,14 +167,17 @@ function App() {
     }
   }
 
-  const guestPagesWithoutHeader = new Set(guestPages)
-  const shouldHideHeader = guestPagesWithoutHeader.has(currentPage)
+  // Header is hidden from all pages for now - will be re-enabled later
+  // const guestPagesWithoutHeader = new Set(guestPages)
+  // const shouldHideHeader = guestPagesWithoutHeader.has(currentPage)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-800 via-emerald-600 to-teal-500">
+      {/* AppHeader hidden for now - uncomment when ready:
       {!shouldHideHeader && (
         <AppHeader user={user} onNavigate={handleNavigation} onSignOut={handleSignOut} />
       )}
+      */}
       {renderPage()}
     </div>
   )
