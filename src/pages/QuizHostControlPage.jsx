@@ -467,66 +467,150 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
   }
 
   if (quizEnded) {
+    const sortedParticipants = [...participants].sort((a, b) => (b.score || 0) - (a.score || 0))
+    
     return (
-      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600 px-6 py-8">
-        <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-emerald-500/30 blur-3xl"></div>
-        <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-teal-400/25 blur-3xl"></div>
-        <div className="relative mx-auto max-w-4xl">
+      <div
+        className="relative min-h-screen overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: `url(${bgSession})` }}
+      >
+        <div className="relative px-4 md:px-8 py-8 min-h-screen flex items-center justify-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-10 text-center text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-2xl"
+            className="w-full max-w-2xl rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/90 via-white/85 to-amber-50/80 p-8 md:p-10 text-center shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
           >
-            <div className="mb-6 text-6xl">🎉</div>
-            <h1 className="mb-4 text-3xl font-bold text-emerald-900">Quiz Completed!</h1>
-            <p className="mb-6 text-emerald-600">Thank you for hosting the quiz session</p>
-            
-            <div className="mb-6 rounded-2xl border border-emerald-200/60 bg-emerald-100/60 p-6">
-              <h3 className="mb-4 text-xl font-bold text-emerald-900">Final Leaderboard</h3>
-              <div className="space-y-3">
-                {participants
-                  .sort((a, b) => (b.score || 0) - (a.score || 0))
-                  .map((participant, index) => (
-                    <div
-                      key={participant.id}
-                      className={`flex items-center justify-between p-3 rounded-lg ${
-                        index === 0 ? 'bg-yellow-50 border border-yellow-200' :
-                        index === 1 ? 'bg-gray-50 border border-gray-200' :
-                        index === 2 ? 'bg-orange-50 border border-orange-200' :
-                        'bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
-                          index === 0 ? 'bg-yellow-500' :
-                          index === 1 ? 'bg-gray-400' :
-                          index === 2 ? 'bg-orange-500' :
-                          'bg-gray-300'
-                        }`}>
-                          {index + 1}
-                        </div>
-                        <span className="font-medium text-gray-800">
-                          {participant.nickname || 'Anonymous'}
-                        </span>
-                      </div>
-                      <div className="text-lg font-bold text-gray-800">
-                        {participant.score || 0} points
-                      </div>
-                    </div>
-                  ))}
+            {/* Trophy Icon */}
+            <motion.div
+              initial={{ scale: 0, rotate: -10 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", bounce: 0.5, delay: 0.2 }}
+              className="mb-6 text-7xl"
+            >
+              🏆
+            </motion.div>
+
+            {/* Title Banner */}
+            <div className="flex justify-center mb-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-200 rounded-full blur-sm"></div>
+                <div className="relative rounded-full bg-gradient-to-r from-amber-100 via-yellow-50 to-amber-100 border-2 border-amber-300/60 px-8 py-3 shadow-lg">
+                  <h1 
+                    className="text-2xl md:text-3xl font-bold text-[#2a1940] tracking-wide"
+                    style={{ fontFamily: "'Pacifico', 'Brush Script MT', cursive", fontStyle: 'italic' }}
+                  >
+                    {quiz?.title || 'Quiz'} Completed!
+                  </h1>
+                </div>
               </div>
             </div>
 
-            <div className="flex justify-center space-x-4">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => onNavigate('dashboard')}
-                className="rounded-full bg-emerald-500 px-6 py-3 font-semibold text-emerald-950 transition-colors hover:bg-emerald-400"
-              >
-                Back to Dashboard
-              </motion.button>
+            <p className="mb-8 text-[#2a1940]/70 text-lg">Thank you for hosting! Here are the final results:</p>
+            
+            {/* Leaderboard */}
+            <div className="mb-8">
+              <div className="flex justify-center mb-6">
+                <div className="rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-6 py-2 shadow-lg">
+                  <span className="text-white font-bold text-lg">🎖️ Final Leaderboard</span>
+                </div>
+              </div>
+
+              {/* Top 3 Podium */}
+              {sortedParticipants.length > 0 && (
+                <div className="flex justify-center items-end gap-4 mb-6">
+                  {/* 2nd Place */}
+                  {sortedParticipants[1] && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 }}
+                      className="flex flex-col items-center"
+                    >
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-white text-2xl font-bold shadow-lg mb-2">
+                        🥈
+                      </div>
+                      <div className="bg-gradient-to-t from-gray-400 to-gray-300 rounded-t-lg w-20 h-16 flex items-end justify-center pb-2">
+                        <span className="text-white font-bold text-sm truncate px-1">{sortedParticipants[1].nickname || 'Anonymous'}</span>
+                      </div>
+                      <div className="text-sm font-semibold text-[#2a1940]">{sortedParticipants[1].score || 0} pts</div>
+                    </motion.div>
+                  )}
+
+                  {/* 1st Place */}
+                  {sortedParticipants[0] && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="flex flex-col items-center"
+                    >
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-300 to-amber-500 flex items-center justify-center text-white text-3xl font-bold shadow-lg mb-2 ring-4 ring-yellow-200">
+                        🥇
+                      </div>
+                      <div className="bg-gradient-to-t from-amber-500 to-yellow-400 rounded-t-lg w-24 h-24 flex items-end justify-center pb-2">
+                        <span className="text-white font-bold text-sm truncate px-1">{sortedParticipants[0].nickname || 'Anonymous'}</span>
+                      </div>
+                      <div className="text-base font-bold text-[#2a1940]">{sortedParticipants[0].score || 0} pts</div>
+                    </motion.div>
+                  )}
+
+                  {/* 3rd Place */}
+                  {sortedParticipants[2] && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
+                      className="flex flex-col items-center"
+                    >
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-xl font-bold shadow-lg mb-2">
+                        🥉
+                      </div>
+                      <div className="bg-gradient-to-t from-orange-600 to-orange-400 rounded-t-lg w-18 h-12 flex items-end justify-center pb-2">
+                        <span className="text-white font-bold text-xs truncate px-1">{sortedParticipants[2].nickname || 'Anonymous'}</span>
+                      </div>
+                      <div className="text-sm font-semibold text-[#2a1940]">{sortedParticipants[2].score || 0} pts</div>
+                    </motion.div>
+                  )}
+                </div>
+              )}
+
+              {/* Rest of participants */}
+              {sortedParticipants.length > 3 && (
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {sortedParticipants.slice(3).map((participant, index) => (
+                    <motion.div
+                      key={participant.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.6 + index * 0.1 }}
+                      className="flex items-center justify-between p-3 rounded-xl bg-white/60 border border-white/50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 flex items-center justify-center text-white font-bold text-sm">
+                          {index + 4}
+                        </div>
+                        <span className="font-medium text-[#2a1940]">{participant.nickname || 'Anonymous'}</span>
+                      </div>
+                      <div className="font-bold text-[#2a1940]">{participant.score || 0} pts</div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
+              {sortedParticipants.length === 0 && (
+                <p className="text-[#2a1940]/60">No participants joined this session</p>
+              )}
             </div>
+
+            {/* Back Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => onNavigate('dashboard')}
+              className="rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-8 py-3 text-lg font-bold text-white shadow-lg hover:from-emerald-400 hover:to-teal-400 transition-all duration-200"
+            >
+              🏠 Back to Dashboard
+            </motion.button>
           </motion.div>
         </div>
       </div>
@@ -538,17 +622,11 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
       className="relative min-h-screen overflow-hidden bg-cover bg-center"
       style={{ backgroundImage: `url(${bgSession})` }}
     >
-      <div className="relative px-6 py-8">
-        <div className="relative mx-auto max-w-6xl">
-          {/* Header */}
-          <div className="mb-8 flex items-center justify-between">
-            <div>
-              <h1 className="mb-2 text-3xl font-bold text-white drop-shadow-lg">
-                {quiz?.title || 'Quiz Host Control'}
-              </h1>
-              <p className="text-white/90 drop-shadow">Session Code: {sessionData.session ? sessionData.session.code : sessionData.code}</p>
-            </div>
-            <div className="text-right">
+      <div className="relative px-4 md:px-8 lg:px-16 py-6 min-h-screen flex flex-col">
+        <div className="relative mx-auto max-w-7xl w-full flex-1 flex flex-col">
+          {/* Header - Only Right Side */}
+          <div className="mb-4 flex items-center justify-end">
+            <div className="flex items-center gap-4">
               <div className="text-sm text-white drop-shadow">
                 Participants: {activeParticipants.length}
                 {participants.length !== activeParticipants.length && (
@@ -561,20 +639,20 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleEndSession}
-                className="mt-3 rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600"
+                className="rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600"
               >
                 End Session
               </motion.button>
             </div>
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-3">
-            {/* Quiz Control */}
-            <div className="lg:col-span-2">
+          <div className="relative flex justify-center items-center flex-1 py-8">
+            {/* Quiz Control - Centered Block */}
+            <div className="w-full max-w-4xl lg:mr-48">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-6 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
+                className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-8 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
               >
                 {!quizStarted ? (
                   <div className="relative py-6">
@@ -684,212 +762,254 @@ export default function QuizHostControlPage({ sessionData, onNavigate }) {
                     </p>
                   </div>
                 ) : questionActive ? (
-                <div>
-                  {/* Timer and Controls */}
-                  <div className="mb-6 flex items-center justify-between">
-                    <div className="text-sm text-emerald-600">
-                      Question {currentQuestionIndex + 1} of {questions.length}
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className={`text-2xl font-bold ${timeLeft <= 10 ? 'text-red-500' : 'text-emerald-600'}`}>
-                        {timeLeft}s
+                <div className="relative py-6">
+                  {/* Quiz Title Banner - Top Center */}
+                  <div className="flex justify-center mb-6">
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="relative"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-200 rounded-full blur-sm"></div>
+                      <div className="relative rounded-full bg-gradient-to-r from-amber-100 via-yellow-50 to-amber-100 border-2 border-amber-300/60 px-10 py-3 shadow-lg">
+                        <h1 
+                          className="text-2xl md:text-3xl font-bold text-[#2a1940] tracking-wide"
+                          style={{ fontFamily: "'Pacifico', 'Brush Script MT', cursive", fontStyle: 'italic' }}
+                        >
+                          {quiz?.title || 'Quiz'}
+                        </h1>
                       </div>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={nextQuestion}
-                        className="rounded-full bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600"
-                      >
-                        Skip Question
-                      </motion.button>
-                    </div>
+                    </motion.div>
                   </div>
 
-                  {/* Question */}
-                  <div className="mb-6">
-                    <h2 className="mb-4 text-2xl font-bold text-emerald-900">
+                  {/* Question Number Badge - Top Right */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="absolute top-4 right-0 z-10"
+                  >
+                    <div className="rounded-lg bg-yellow-300 px-5 py-2.5 shadow-md border border-yellow-400/50">
+                      <span className="text-lg font-bold text-[#2a1940]">{currentQuestionIndex + 1} of {questions.length}</span>
+                    </div>
+                  </motion.div>
+
+                  {/* Question Text - BIGGER */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-center mb-6"
+                  >
+                    <p className="text-xl md:text-2xl text-[#2a1940] font-semibold leading-relaxed">
                       {currentQuestion?.text}
-                    </h2>
-                    {currentQuestion?.image_url && (
-                      <img
-                        src={currentQuestion.image_url}
-                        alt="Question"
-                        className="mx-auto max-h-64 rounded-lg shadow-lg"
-                      />
-                    )}
-                  </div>
-
-                  {/* Answers */}
-                  <div className="space-y-3">
-                    {currentQuestion?.answers?.map((answer, index) => (
-                      <div
-                        key={answer.id}
-                        className="rounded-lg border-2 border-emerald-100/60 bg-white/80 p-4"
-                      >
-                        <div className="flex items-center">
-                          <div className="mr-4 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-400 font-bold text-emerald-950">
-                            {String.fromCharCode(65 + index)}
-                          </div>
-                          <span className="text-emerald-900">{answer.text}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-6 text-center">
-                    <p className="mb-4 text-emerald-600">
-                      {responses.length} of {activeParticipants.length} participants answered
                     </p>
+                  </motion.div>
+
+                  {/* Question Image - Centered */}
+                  {currentQuestion?.image_url && (
+                    <div className="flex justify-center mb-8">
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="relative"
+                      >
+                        <img
+                          src={currentQuestion.image_url}
+                          alt="Question"
+                          className="max-h-56 md:max-h-64 rounded-xl shadow-xl object-cover border-4 border-white/80"
+                        />
+                      </motion.div>
+                    </div>
+                  )}
+
+                  {/* Answer Options - 2x2 Grid with Colors - BIGGER */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    {currentQuestion?.answers?.map((answer, index) => {
+                      const answerColors = [
+                        'bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600', // Red
+                        'bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600', // Blue
+                        'bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600', // Yellow
+                        'bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-500 hover:to-green-600', // Green
+                      ]
+                      return (
+                        <motion.div
+                          key={answer.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className={`${answerColors[index % 4]} rounded-xl px-5 py-4 text-center shadow-lg cursor-default transition-all duration-200`}
+                        >
+                          <span className="text-white font-semibold text-base md:text-lg drop-shadow-sm">
+                            {answer.text}
+                          </span>
+                        </motion.div>
+                      )
+                    })}
+                  </div>
+
+                  {/* Response Counter and Skip Button */}
+                  <div className="flex items-center justify-between">
+                    <div className="text-base text-[#2a1940]/70">
+                      <span className="font-bold text-lg">{responses.length}</span> of <span className="font-bold text-lg">{activeParticipants.length}</span> answered
+                    </div>
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={nextQuestion}
-                      className="rounded-full bg-orange-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600"
+                      className="rounded-full bg-gradient-to-r from-orange-400 to-orange-500 px-6 py-2.5 text-base font-semibold text-white shadow-lg transition-colors hover:from-orange-500 hover:to-orange-600"
                     >
-                      Skip Question
+                      Skip →
                     </motion.button>
                   </div>
                 </div>
               ) : showResults ? (
-                <div>
-                  <h2 className="mb-6 text-2xl font-bold text-emerald-900">Question Results</h2>
-                  
-                  <div className="mb-6">
-                    <h3 className="mb-4 text-lg font-semibold text-emerald-800">
-                      {currentQuestion?.text}
-                    </h3>
-                    
-                    <div className="space-y-3">
-                      {currentQuestion?.answers?.map((answer, index) => (
-                        <div
-                          key={answer.id}
-                          className={`rounded-lg border-2 p-4 ${
-                            answer.is_correct 
-                              ? 'border-emerald-300 bg-emerald-100/60' 
-                              : 'border-emerald-100/60 bg-white/80'
-                          }`}
+                <div className="relative py-6">
+                  {/* Quiz Title Banner - Top Center */}
+                  <div className="flex justify-center mb-6">
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="relative"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-200 rounded-full blur-sm"></div>
+                      <div className="relative rounded-full bg-gradient-to-r from-amber-100 via-yellow-50 to-amber-100 border-2 border-amber-300/60 px-10 py-3 shadow-lg">
+                        <h1 
+                          className="text-2xl md:text-3xl font-bold text-[#2a1940] tracking-wide"
+                          style={{ fontFamily: "'Pacifico', 'Brush Script MT', cursive", fontStyle: 'italic' }}
                         >
-                          <div className="flex items-center">
-                            <div className={`mr-4 flex h-8 w-8 items-center justify-center rounded-full font-bold text-emerald-950 ${
-                              answer.is_correct ? 'bg-emerald-400' : 'bg-emerald-200'
-                            }`}>
-                              {String.fromCharCode(65 + index)}
-                            </div>
-                            <span className="text-emerald-900">{answer.text}</span>
-                            {answer.is_correct && <span className="ml-2 font-bold text-emerald-600">✓</span>}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                          {quiz?.title || 'Quiz'}
+                        </h1>
+                      </div>
+                    </motion.div>
                   </div>
 
-                  <div className="text-center">
-                    <div className="mb-4 flex justify-center space-x-4">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={nextQuestion}
-                        disabled={responses.length < activeParticipants.length && activeParticipants.length > 0}
-                        className={`px-6 py-3 rounded-full transition-colors ${
-                          responses.length >= activeParticipants.length && activeParticipants.length > 0
-                            ? 'bg-emerald-500 text-emerald-950 hover:bg-emerald-400'
-                            : 'bg-emerald-200 text-emerald-600 cursor-not-allowed'
-                        }`}
-                      >
-                        {currentQuestionIndex >= questions.length - 1 ? 'Finish Quiz' : 'Next Question'}
-                      </motion.button>
-                      
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={nextQuestion}
-                        className="rounded-full bg-orange-500 px-6 py-3 text-white transition-colors hover:bg-orange-600"
-                      >
-                        {currentQuestionIndex >= questions.length - 1 ? 'Finish Quiz' : 'Skip to Next'}
-                      </motion.button>
+                  {/* Question Number Badge - Top Right */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="absolute top-4 right-0 z-10"
+                  >
+                    <div className="rounded-lg bg-yellow-300 px-5 py-2.5 shadow-md border border-yellow-400/50">
+                      <span className="text-lg font-bold text-[#2a1940]">{currentQuestionIndex + 1} of {questions.length}</span>
                     </div>
-                    
-                    {responses.length < activeParticipants.length && activeParticipants.length > 0 && (
-                      <p className="text-sm text-emerald-600">
-                        Waiting for {activeParticipants.length - responses.length} more participant(s) to answer
-                        <br />
-                        <span className="font-medium text-orange-500">Or use "Skip to Next" to continue</span>
-                      </p>
-                    )}
+                  </motion.div>
+
+                  {/* Results Badge */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex justify-center mb-4"
+                  >
+                    <div className="rounded-full bg-gradient-to-r from-emerald-400 to-green-500 px-6 py-2 shadow-lg">
+                      <span className="text-white font-bold text-lg">⏱️ Time's Up! - Results</span>
+                    </div>
+                  </motion.div>
+
+                  {/* Question Text */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-center mb-6"
+                  >
+                    <p className="text-xl md:text-2xl text-[#2a1940] font-semibold leading-relaxed">
+                      {currentQuestion?.text}
+                    </p>
+                  </motion.div>
+
+                  {/* Answer Options - 2x2 Grid with Colors showing correct/incorrect */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    {currentQuestion?.answers?.map((answer, index) => {
+                      const baseColors = [
+                        { bg: 'from-red-400 to-red-500', correct: 'from-emerald-400 to-green-500 ring-4 ring-emerald-300' },
+                        { bg: 'from-blue-400 to-blue-500', correct: 'from-emerald-400 to-green-500 ring-4 ring-emerald-300' },
+                        { bg: 'from-amber-400 to-yellow-500', correct: 'from-emerald-400 to-green-500 ring-4 ring-emerald-300' },
+                        { bg: 'from-emerald-400 to-green-500', correct: 'from-emerald-400 to-green-500 ring-4 ring-emerald-300' },
+                      ]
+                      const colorSet = baseColors[index % 4]
+                      const bgClass = answer.is_correct 
+                        ? `bg-gradient-to-r ${colorSet.correct}` 
+                        : `bg-gradient-to-r ${colorSet.bg} opacity-50`
+                      
+                      return (
+                        <motion.div
+                          key={answer.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className={`${bgClass} rounded-xl px-5 py-4 text-center shadow-lg transition-all duration-200 relative`}
+                        >
+                          <span className="text-white font-semibold text-base md:text-lg drop-shadow-sm">
+                            {answer.text}
+                          </span>
+                          {answer.is_correct && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg"
+                            >
+                              <span className="text-emerald-500 text-xl">✓</span>
+                            </motion.div>
+                          )}
+                        </motion.div>
+                      )
+                    })}
                   </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center justify-center gap-4">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={nextQuestion}
+                      className="rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-8 py-3 text-lg font-bold text-white shadow-lg hover:from-emerald-400 hover:to-teal-400 transition-all duration-200"
+                    >
+                      {currentQuestionIndex >= questions.length - 1 ? '🏆 Finish Quiz' : '➡️ Next Question'}
+                    </motion.button>
+                  </div>
+
+                  {/* Waiting message */}
+                  {responses.length < activeParticipants.length && activeParticipants.length > 0 && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="mt-4 text-center text-sm text-[#2a1940]/70"
+                    >
+                      {responses.length} of {activeParticipants.length} participants answered
+                    </motion.p>
+                  )}
                 </div>
               ) : null}
             </motion.div>
           </div>
 
-          {/* Participants & Leaderboard */}
-          <div className="lg:col-span-1">
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-slate-100/85 via-white/75 to-emerald-50/70 p-6 text-emerald-900 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl"
-            >
-              <h3 className="mb-4 text-xl font-bold text-emerald-900">
-                Participants ({activeParticipants.length})
-                {participants.length !== activeParticipants.length && (
-                  <span className="ml-2 text-sm text-emerald-500">
-                    {participants.length - activeParticipants.length} left
-                  </span>
-                )}
-              </h3>
-              
-              {participants.length === 0 ? (
-                <div className="py-8 text-center">
-                  <div className="mb-2 text-4xl">👥</div>
-                  <p className="text-emerald-600">No participants yet</p>
+            {/* Timer Block - Floating Right Side (only visible when quiz is active) */}
+            {quizStarted && questionActive && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2"
+              >
+                <div className="rounded-[2rem] border border-white/20 bg-gradient-to-br from-slate-100/90 via-white/80 to-amber-50/70 p-6 shadow-[0_40px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl">
+                  <div className="text-center mb-4">
+                    <span className="text-sm font-semibold text-[#2a1940]/70 uppercase tracking-wider">Time Left</span>
+                  </div>
+                  <motion.div
+                    key={timeLeft}
+                    initial={{ scale: 1.1 }}
+                    animate={{ scale: 1 }}
+                    className={`flex items-center justify-center w-32 h-32 rounded-2xl shadow-xl font-bold text-6xl ${
+                      timeLeft <= 10 
+                        ? 'bg-gradient-to-br from-red-400 to-red-500 text-white' 
+                        : 'bg-gradient-to-br from-amber-200 to-amber-300 text-[#2a1940]'
+                    }`}
+                  >
+                    {timeLeft}
+                  </motion.div>
+                  <div className="text-center mt-4">
+                    <span className="text-xs text-[#2a1940]/60">seconds</span>
+                  </div>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {participants
-                    .sort((a, b) => (b.score || 0) - (a.score || 0))
-                    .map((participant, index) => (
-                      <motion.div
-                        key={participant.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className={`flex items-center justify-between rounded-lg border p-3 ${
-                          participant?.is_active === false || participant?.left_at
-                            ? 'border-emerald-100/60 bg-emerald-50/60 opacity-70'
-                            : index === 0
-                              ? 'border-yellow-200 bg-yellow-50'
-                              : index === 1
-                                ? 'border-emerald-100/60 bg-white/80'
-                                : index === 2
-                                  ? 'border-orange-200 bg-orange-50'
-                                  : 'border-emerald-100/60 bg-white/80'
-                        }`}
-                      >
-                        <div className="flex items-center">
-                          <div className={`mr-3 flex h-8 w-8 items-center justify-center rounded-full font-bold text-emerald-950 ${
-                            index === 0 ? 'bg-yellow-400' :
-                            index === 1 ? 'bg-emerald-300' :
-                            index === 2 ? 'bg-orange-400' :
-                            'bg-emerald-200'
-                          }`}>
-                            {index + 1}
-                          </div>
-                          <span className="font-medium text-emerald-900">
-                            {participant.nickname || 'Anonymous'}
-                            {(participant?.is_active === false || participant?.left_at) && (
-                              <span className="ml-2 text-xs uppercase tracking-wide text-emerald-500">Left</span>
-                            )}
-                          </span>
-                        </div>
-                        <div className="text-lg font-bold text-emerald-900">
-                          {participant.score || 0}
-                        </div>
-                      </motion.div>
-                    ))}
-                </div>
-              )}
-            </motion.div>
-          </div>
+              </motion.div>
+            )}
         </div>
       </div>
     </div>
